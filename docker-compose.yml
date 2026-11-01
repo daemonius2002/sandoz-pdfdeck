@@ -1,0 +1,9 @@
+services:
+  pdfdeck:
+    build: .
+    restart: unless-stopped
+    ports: ["3000:3000"]
+    environment:
+      ADMIN_PASSWORD: schimba-ma
+      # PUBLIC_URL: https://prezentari.domeniul-tau.ro
+    volumes: ["./data:/data"]

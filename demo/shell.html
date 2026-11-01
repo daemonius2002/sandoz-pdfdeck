@@ -1,0 +1,118 @@
+<title>PDF Deck</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<style>
+  /* Presenter: one full-bleed dark stage; UI chrome is frosted overlays above it. Single dark look by choice. */
+  :root {
+    color-scheme: dark;
+    --stage: #000000;
+    --glass: rgba(14, 17, 23, 0.86);
+    --ink: #eef1f6;
+    --ink-soft: #9aa3b4;
+    --accent: #4f8cff;
+    --line: rgba(255, 255, 255, 0.14);
+    --font-ui: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Segoe UI", Roboto, sans-serif;
+  }
+  * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+  html, body { height: 100%; }
+  body { background: var(--stage); color: var(--ink); font: 15px/1.45 var(--font-ui); overflow: hidden; overscroll-behavior: none;
+    -webkit-user-select: none; user-select: none; -webkit-touch-callout: none; }
+  #stage { position: absolute; inset: 0; overflow: hidden; touch-action: none; background: var(--stage); }
+  .slide { position: absolute; will-change: transform, opacity; }
+  .slide canvas { display: block; width: 100%; height: 100%; }
+  .slide.anim { transition: transform var(--dur, 350ms) cubic-bezier(.2,.7,.2,1), opacity var(--dur, 350ms) ease; }
+  #hotspots { position: absolute; z-index: 5; pointer-events: none; }
+  .hs { position: absolute; border-radius: 6px; }
+  .hs.flash { animation: flash .35s ease-out; }
+  @keyframes flash { from { background: rgba(255,255,255,.35); } to { background: rgba(255,255,255,0); } }
+  body.debug .hs { outline: 2px dashed var(--accent); background: rgba(79,140,255,.16); }
+
+  #menu-btn { position: absolute; z-index: 6; top: calc(10px + env(safe-area-inset-top, 0px)); right: calc(10px + env(safe-area-inset-right, 0px));
+    width: 40px; height: 40px; border-radius: 50%; border: 1px solid var(--line); background: rgba(0,0,0,.35); color: var(--ink);
+    font-size: 18px; cursor: pointer; opacity: .55; transition: opacity .2s; }
+  #menu-btn:hover, #menu-btn:focus-visible { opacity: 1; }
+  #indicator { position: absolute; z-index: 6; bottom: calc(10px + env(safe-area-inset-bottom, 0px)); right: calc(14px + env(safe-area-inset-right, 0px));
+    font-size: 12px; padding: 3px 9px; border-radius: 99px; background: rgba(0,0,0,.45); color: var(--ink-soft); pointer-events: none;
+    font-variant-numeric: tabular-nums; }
+
+  .overlay { position: absolute; inset: 0; z-index: 20; display: flex; flex-direction: column; align-items: center; justify-content: center;
+    gap: 16px; background: var(--glass); -webkit-backdrop-filter: blur(16px); backdrop-filter: blur(16px); text-align: center;
+    padding-block: 24px; padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); }
+  .overlay h1 { margin: 0; font-size: clamp(24px, 4vw, 38px); font-weight: 700; letter-spacing: -.02em; text-wrap: balance; }
+  .overlay p { margin: 0; color: var(--ink-soft); max-width: 58ch; text-wrap: pretty; }
+  .eyebrow { font-size: 12px; letter-spacing: .14em; text-transform: uppercase; color: var(--accent); font-weight: 600; }
+  .row { display: flex; flex-wrap: wrap; gap: 10px; justify-content: center; align-items: center; }
+  .btn { appearance: none; border: 1px solid var(--line); border-radius: 12px; padding: 12px 20px; font: inherit; font-weight: 600;
+    background: rgba(255,255,255,.08); color: var(--ink); cursor: pointer; display: inline-flex; align-items: center; gap: 8px; }
+  .btn.primary { background: var(--accent); border-color: var(--accent); color: #fff; }
+  .btn:focus-visible, input:focus-visible + span { outline: 2px solid var(--accent); outline-offset: 2px; }
+  .check { display: inline-flex; gap: 8px; align-items: center; color: var(--ink-soft); font-size: 14px; cursor: pointer; }
+  .tips { display: grid; grid-template-columns: repeat(auto-fit, minmax(170px, 1fr)); gap: 10px; width: min(640px, 100%); margin-top: 6px; }
+  .tip { border: 1px solid var(--line); border-radius: 12px; padding: 10px 12px; text-align: left; font-size: 13px; color: var(--ink-soft); }
+  .tip b { display: block; color: var(--ink); font-size: 13px; margin-bottom: 2px; }
+  #loadmsg { color: var(--ink-soft); }
+
+  #menu { justify-content: flex-start; align-items: stretch; }
+  #menu header { display: flex; flex-wrap: wrap; align-items: center; gap: 10px; }
+  #menu header div { flex: 1; min-width: 0; text-align: left; }
+  #m-title { font-weight: 650; font-size: 17px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  #m-stats { font-size: 13px; color: var(--ink-soft); }
+  #grid { flex: 1; overflow-y: auto; touch-action: pan-y; display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+    gap: 14px; align-content: start; padding: 4px; }
+  .thumb { appearance: none; border: 0; padding: 0; background: none; color: var(--ink-soft); font: inherit; font-size: 12px; cursor: pointer;
+    font-variant-numeric: tabular-nums; }
+  .thumb .img { width: 100%; aspect-ratio: var(--ar, 4/3); background: rgba(255,255,255,.06); border-radius: 8px; overflow: hidden;
+    outline: 3px solid transparent; outline-offset: 2px; margin-bottom: 5px; }
+  .thumb.current .img { outline-color: var(--accent); }
+  .thumb canvas { width: 100%; height: 100%; display: block; }
+  #menu footer { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 10px; color: var(--ink-soft); font-size: 13px; }
+
+  #linkcard { position: absolute; z-index: 15; left: 50%; transform: translateX(-50%); bottom: calc(18px + env(safe-area-inset-bottom, 0px));
+    max-width: calc(100% - 32px); display: flex; gap: 10px; align-items: center; background: var(--glass); border: 1px solid var(--line);
+    border-radius: 12px; padding: 10px 12px; -webkit-backdrop-filter: blur(16px); backdrop-filter: blur(16px); }
+  #linkcard a { color: var(--accent); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; min-width: 0; }
+  #linkcard button { background: none; border: 0; color: var(--ink-soft); font-size: 18px; cursor: pointer; }
+  @media (prefers-reduced-motion: reduce) { .slide.anim { transition: none; } .hs.flash { animation: none; } }
+</style>
+
+<div id="stage"><div id="hotspots"></div></div>
+<button id="menu-btn" type="button" aria-label="Meniu">☰</button>
+<div id="indicator"></div>
+<div id="linkcard" hidden><span>Link din PDF:</span><a href="#" target="_blank" rel="noopener"></a><button type="button" aria-label="Închide">×</button></div>
+
+<div id="loader" class="overlay">
+  <div class="eyebrow">PDF Deck</div>
+  <div id="loadmsg">Se încarcă…</div>
+</div>
+
+<div id="start" class="overlay" hidden>
+  <div class="eyebrow">PDF Deck · previzualizare</div>
+  <h1 id="start-title">Prezentări InDesign interactive, pe iPad</h1>
+  <p>Butoanele din PDF funcționează la atingere: navigare între pagini, linkuri și pop-up-uri Show/Hide. Încearcă exemplul sau deschide propriul PDF exportat ca „Adobe PDF (Interactive)”.</p>
+  <div class="row">
+    <button class="btn primary" id="go-demo" type="button">Pornește prezentarea</button>
+    <label class="btn" for="file-start">Deschide PDF-ul tău</label>
+    <input type="file" id="file-start" accept="application/pdf,.pdf" hidden>
+  </div>
+  <label class="check"><input type="checkbox" id="fs-on" checked> Pe tot ecranul (unde browserul permite)</label>
+  <div class="tips">
+    <div class="tip"><b>Schimbi pagina</b>Glisezi stânga/dreapta sau folosești săgețile.</div>
+    <div class="tip"><b>Meniu cu toate paginile</b>Ții apăsat o secundă, atingi cu două degete sau apeși ☰.</div>
+    <div class="tip"><b>Vezi zonele active</b>Din meniu: „Arată zonele interactive”.</div>
+  </div>
+</div>
+
+<div id="menu" class="overlay" hidden>
+  <header>
+    <div><div id="m-title"></div><div id="m-stats"></div></div>
+    <label class="btn" for="file-menu">Deschide alt PDF</label>
+    <input type="file" id="file-menu" accept="application/pdf,.pdf" hidden>
+    <button class="btn" id="m-fs" type="button">Full screen</button>
+    <button class="btn primary" id="m-close" type="button">Înapoi la prezentare</button>
+  </header>
+  <div id="grid"></div>
+  <footer>
+    <span>PDF-ul se deschide doar în browserul tău; nu se încarcă nicăieri.</span>
+    <label class="check"><input type="checkbox" id="m-debug"> Arată zonele interactive</label>
+  </footer>
+</div>
