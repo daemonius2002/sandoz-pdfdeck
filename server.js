@@ -12,6 +12,7 @@ import { Auth, ROLES, roleAtLeast } from './lib/auth.js';
 import { Audit, EVENT_LABELS } from './lib/audit.js';
 import { Backups } from './lib/backup.js';
 import { Notifier, NOTIFY_EVENTS } from './lib/notify.js';
+import { translateResponses, toEnglish, langOf } from './lib/i18n-server.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const PORT = Number(process.env.PORT || 3000);
@@ -25,7 +26,7 @@ for (const d of Object.values(DIRS)) fss.mkdirSync(d, { recursive: true });
 
 // Presenter defaults for every new presentation (editable in Settings).
 const PRESENTER_DEFAULTS = {
-  swipe: true,              // swipe left/right to change page
+  swipe: false,             // free navigation (swipe, keyboard arrows); off = only the PDF's own buttons
   tapZones: false,          // tap left/right edge to change page
   resetOnPageEnter: true,   // pop-ups (show/hide) start closed every time you enter a page
   transition: 'slide',      // slide | fade | none (a transition set in the PDF wins)
@@ -36,7 +37,7 @@ const PRESENTER_DEFAULTS = {
 
 // ---------------- configuration ----------------
 const DEFAULT_CONFIG = {
-  siteName: 'PDF Deck',
+  siteName: 'SANDOZ PRESENTING DECK',
   access: 'login',          // login: presentations need an account | public: anyone with the link
   logViews: true,
   security: { sessionDays: 30, maxAttempts: 5, lockMinutes: 15 },
@@ -52,6 +53,8 @@ config.data = {
   backup: { ...DEFAULT_CONFIG.backup, ...config.data.backup },
   notify: { ...DEFAULT_CONFIG.notify, ...config.data.notify, events: { ...DEFAULT_CONFIG.notify.events, ...config.data.notify?.events } },
 };
+// the platform used to be called "PDF Deck": move old installs to the new name once
+if (!config.data.siteName || config.data.siteName === 'PDF Deck') { config.data.siteName = DEFAULT_CONFIG.siteName; config.save(); }
 const settings = () => config.data;
 
 const auth = new Auth(DATA_DIR, settings);
@@ -85,6 +88,12 @@ const findDeck = (id) => db.decks.find((d) => d.id === id);
 const findSlug = (slug) => db.decks.find((d) => d.slug === slug);
 
 const LANGS = ['DE', 'FR', 'IT', 'EN', 'RO', 'XX'];
+// "Sales catalogue _Zeigebuch_ALL_ger_EXTRAS_RGB_INTERACTIV_v5" -> "Sales catalogue Zeigebuch"
+function cleanCatalogName(base) {
+  const drop = /^(all|ger|de|deu|deutsch|fr|fra|fre|it|ita|en|eng|ro|extras?|rgb|cmyk|interactiv|interactive|final|print|web|ipad|v\d+|\d+)$/i;
+  const words = base.replace(/[_]+/g, ' ').split(/\s+/).filter((w) => w && !drop.test(w));
+  return (words.join(' ').trim() || base).slice(0, 120);
+}
 function guessLang(name) {
   const n = name.toLowerCase();
   const t = (re) => new RegExp(`(^|[_\\-\\s.])(${re})([_\\-\\s.]|$)`).test(n);
@@ -116,6 +125,7 @@ app.use((req, res, next) => {
   next();
 });
 
+app.use(translateResponses);
 const cookieOf = (req, name) => (req.headers.cookie || '').split(/;\s*/).map((c) => c.split('=')).find(([k]) => k === name)?.[1];
 const ipOf = (req) => req.ip || req.socket.remoteAddress;
 app.use((req, _res, next) => { if (!PUBLIC_URL && req.get('host')) lastBaseUrl = `${req.protocol}://${req.get('host')}`; next(); });
@@ -193,7 +203,7 @@ app.post('/api/login', express.json(), async (req, res) => {
   const r = await auth.login(username, password, { ip: ipOf(req), ua: req.get('user-agent') });
   if (!r.ok) {
     if (r.locked && !r.reason) {
-      return res.status(429).json({ error: `Prea multe încercări greșite. Încearcă din nou după ${new Date(r.locked).toLocaleTimeString('ro-RO', { hour: '2-digit', minute: '2-digit', timeZone: 'Europe/Bucharest' })}.` });
+      return res.status(429).json({ error: `Prea multe încercări greșite. Încearcă din nou după ${new Date(r.locked).toLocaleTimeString(langOf(req) === 'en' ? 'en-GB' : 'ro-RO', { hour: '2-digit', minute: '2-digit', timeZone: 'Europe/Bucharest' })}.` });
     }
     const who = String(username || '').slice(0, 60);
     audit.log('auth.login_failed', { ip: ipOf(req), target: who, detail: r.reason === 'disabled' ? 'cont dezactivat' : 'utilizator sau parolă greșită', ok: false });
@@ -441,7 +451,7 @@ app.post('/api/decks', need('editor'), upload.single('pdf'), async (req, res) =>
   if (!req.file) return res.status(400).json({ error: 'Alege un fișier PDF.' });
   const base = req.file.originalname.replace(/\.pdf$/i, '');
   const title = (req.body.title || base.replace(/_+/g, ' ')).trim();
-  const catalog = (req.body.catalog || '').trim() || db.decks[0]?.catalog || base;
+  const catalog = (req.body.catalog || '').trim() || db.decks[0]?.catalog || cleanCatalogName(base);
   const lang = LANGS.includes(req.body.lang) ? req.body.lang : guessLang(base);
   // same catalog + language again => new version of that presentation (same link)
   const existing = db.decks.find((d) => d.catalog === catalog && d.lang === lang);
@@ -554,7 +564,7 @@ const loginRedirect = (req, res) => res.redirect(`/login?next=${encodeURICompone
 
 app.get('/p/:slug', (req, res) => {
   const deck = findSlug(req.params.slug);
-  if (!deck) return res.status(404).send('Prezentarea nu există.');
+  if (!deck) return res.status(404).send(langOf(req) === 'en' ? toEnglish('Prezentarea nu există.') : 'Prezentarea nu există.');
   if (!canView(req, deck)) return loginRedirect(req, res);
   res.set('Cache-Control', 'no-cache');
   res.type('html').send(viewerHtml
@@ -643,4 +653,4 @@ audit.log('system.start');
 setTimeout(runAutoBackup, 60e3);            // shortly after start…
 setInterval(runAutoBackup, 3600e3).unref(); // …then checked every hour, made once a day
 
-app.listen(PORT, () => console.log(`PDF Deck pornit pe http://localhost:${PORT}  (admin: /admin)`));
+app.listen(PORT, () => console.log(`${settings().siteName} pornit pe http://localhost:${PORT}  (admin: /admin)`));

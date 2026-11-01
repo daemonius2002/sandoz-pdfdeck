@@ -4,11 +4,15 @@
   --danger: #c4302b; --danger-soft: #fbeaea; --warn: #a65f00; --warn-soft: #fdf1e0; --ok: #18794a; --ok-soft: #e4f4ea;
   --font: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", sans-serif;
 }
+/* night theme: follows the device unless chosen explicitly (Day / Night switch) */
 @media (prefers-color-scheme: dark) {
-  :root { --bg: #0f1218; --card: #171b24; --ink: #e8ebf2; --muted: #9aa3b5; --line: #2a303d; --soft: #1f2430;
+  :root:not([data-theme="light"]) { --bg: #0f1218; --card: #171b24; --ink: #e8ebf2; --muted: #9aa3b5; --line: #2a303d; --soft: #1f2430;
     --accent: #5b86ff; --accent-ink: #0b0e14; --accent-soft: #1c2747;
     --danger: #ff6b63; --danger-soft: #3a1b1b; --warn: #f0a640; --warn-soft: #3a2a12; --ok: #4fd18b; --ok-soft: #13301f; color-scheme: dark; }
 }
+:root[data-theme="dark"] { --bg: #0f1218; --card: #171b24; --ink: #e8ebf2; --muted: #9aa3b5; --line: #2a303d; --soft: #1f2430;
+    --accent: #5b86ff; --accent-ink: #0b0e14; --accent-soft: #1c2747;
+    --danger: #ff6b63; --danger-soft: #3a1b1b; --warn: #f0a640; --warn-soft: #3a2a12; --ok: #4fd18b; --ok-soft: #13301f; color-scheme: dark; }
 * { box-sizing: border-box; }
 [hidden] { display: none !important; }
 body { margin: 0; background: var(--bg); color: var(--ink); font: 15px/1.45 var(--font); -webkit-font-smoothing: antialiased; }
@@ -35,7 +39,7 @@ label { color: var(--muted); font-size: 13px; }
 /* top bar & tabs */
 .top { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; margin-bottom: 14px; }
 .brand { display: flex; align-items: center; gap: 10px; flex: 1; min-width: 0; }
-.mark { width: 30px; height: 30px; border-radius: 8px; background: var(--ink); color: var(--bg); display: grid; place-items: center; font-weight: 800; font-size: 12px; flex: none; }
+.mark { width: 36px; height: 36px; border-radius: 9px; flex: none; display: block; object-fit: cover; background: #f1e9e6; }
 .brand b { font-size: 19px; font-weight: 800; letter-spacing: -.01em; }
 .who { color: var(--muted); font-size: 14px; display: flex; gap: 8px; align-items: center; }
 .role { font-size: 11px; font-weight: 800; letter-spacing: .06em; text-transform: uppercase; padding: 2px 7px; border-radius: 5px; background: var(--soft); color: var(--muted); }
@@ -157,3 +161,22 @@ textarea { font: 14px var(--font); color: var(--ink); background: var(--bg); bor
 .kind { font-size: 12px; font-weight: 700; padding: 2px 8px; border-radius: 99px; background: var(--soft); color: var(--muted); }
 .kind.manual { background: var(--accent-soft); color: var(--accent); }
 .uact { display: flex; flex-wrap: wrap; gap: 6px; min-width: 200px; }
+/* new-group form: one row per field so long catalogue names never collide with the languages */
+#ng.grid2 { grid-template-columns: minmax(0, 1fr); max-width: 820px; gap: 14px; }
+#ng .field:last-child { justify-self: start; }
+.groupchecks { min-width: 0; }
+.groupchecks label { overflow-wrap: anywhere; min-width: 0; max-width: 100%; align-items: flex-start; line-height: 1.35; }
+.groupchecks label input { margin-top: 2px; flex: none; }
+#groups td { min-width: 0; }
+#groups td:nth-child(2) .groupchecks { flex-direction: column; gap: 4px; max-width: 280px; }
+
+/* RO|EN and Day|Night|Auto switches */
+.switches { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+.seg { display: inline-flex; border: 1px solid var(--line); border-radius: 9px; overflow: hidden; background: var(--card); }
+.seg button { border: 0; border-radius: 0; padding: 6px 10px; background: transparent; color: var(--muted); font-weight: 700; font-size: 13px; gap: 5px; }
+.seg button + button { border-left: 1px solid var(--line); }
+.seg button[aria-pressed="true"] { background: var(--accent-soft); color: var(--accent); }
+.seg button:hover { color: var(--ink); }
+.login-card .switches { justify-content: flex-end; margin-bottom: 4px; }
+@media (max-width: 720px) { .seg-label { display: none; } }
+.brand b { letter-spacing: .02em; }

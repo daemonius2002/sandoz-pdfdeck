@@ -10,6 +10,7 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="{{TITLE}}">
 <meta name="theme-color" content="{{BG}}">
+<link rel="icon" href="/favicon.png">
 <link rel="manifest" href="/p/{{SLUG}}/manifest.webmanifest">
 <link rel="apple-touch-icon" href="{{ICON}}">
 <link rel="modulepreload" href="/vendor/pdfjs/pdf.min.mjs">
@@ -71,25 +72,25 @@
   <div id="loader" class="overlay">
     <h1>{{TITLE}}</h1>
     <div class="bar"><i id="progress"></i></div>
-    <div class="muted" id="loadmsg">Se încarcă prezentarea…</div>
+    <div class="muted" id="loadmsg" data-i18n="pv.loading">Se încarcă prezentarea…</div>
   </div>
 
   <div id="start" class="overlay" hidden>
     <h1>{{TITLE}}</h1>
-    <div><button class="btn" id="go">Pornește pe tot ecranul</button><button class="btn ghost" id="go-window">Fără full screen</button></div>
-    <div class="muted" id="start-hint">Ține apăsat o secundă oriunde (sau atinge cu două degete) pentru meniu.</div>
+    <div><button class="btn" id="go" data-i18n="pv.start">Pornește pe tot ecranul</button><button class="btn ghost" id="go-window" data-i18n="pv.window">Fără full screen</button></div>
+    <div class="muted" id="start-hint" data-i18n="pv.hint">Ține apăsat o secundă oriunde (sau atinge cu două degete) pentru meniu.</div>
   </div>
 
   <div id="menu" class="overlay" hidden>
     <header>
       <h2>{{TITLE}}</h2>
-      <button class="btn ghost" id="m-fs">Full screen</button>
-      <button class="btn" id="m-close">Înapoi la prezentare</button>
+      <button class="btn ghost" id="m-fs" data-i18n="pv.fs">Full screen</button>
+      <button class="btn" id="m-close" data-i18n="pv.back">Înapoi la prezentare</button>
     </header>
     <div id="grid"></div>
     <div class="row">
       <span id="m-offline"></span>
-      <label style="margin-left:auto"><input type="checkbox" id="m-debug"> Arată zonele interactive</label>
+      <label style="margin-left:auto"><input type="checkbox" id="m-debug"> <span data-i18n="pv.debug">Arată zonele interactive</span></label>
     </div>
   </div>
 

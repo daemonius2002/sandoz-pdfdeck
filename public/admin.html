@@ -3,39 +3,43 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>PDF Deck — Administrare</title>
-<link rel="icon" href="/icon.png">
+<title>SANDOZ PRESENTING DECK</title>
+<link rel="icon" href="/favicon.png">
+<link rel="apple-touch-icon" href="/apple-touch-icon.png">
+<script>try { const t = localStorage.getItem('pdfdeck.theme'); if (t === 'light' || t === 'dark') document.documentElement.dataset.theme = t; } catch {}</script>
 <link rel="stylesheet" href="/admin.css">
 </head>
 <body>
 <div class="wrap">
   <header class="top">
-    <div class="brand"><div class="mark">PD</div><b id="site">PDF Deck</b></div>
+    <div class="brand"><img class="mark" src="/brand.png" alt=""><b id="site">SANDOZ PRESENTING DECK</b></div>
+    <div class="switches" id="switches"></div>
     <div class="who"><span id="me-name"></span><span class="role" id="me-role"></span></div>
-    <button id="logout" type="button">Ieșire</button>
+    <button id="logout" type="button" data-i18n="top.logout">Ieșire</button>
   </header>
   <nav class="tabs" id="tabs">
-    <a href="#decks" data-tab="decks">Prezentări</a>
-    <a href="#stats" data-tab="stats" data-min="editor">Statistici</a>
-    <a href="#users" data-tab="users" data-min="admin">Utilizatori</a>
-    <a href="#log" data-tab="log" data-min="admin">Jurnal</a>
-    <a href="#settings" data-tab="settings" data-min="admin">Setări</a>
-    <a href="#backup" data-tab="backup" data-min="admin">Backup</a>
-    <a href="#account" data-tab="account">Contul meu</a>
+    <a href="#decks" data-tab="decks" data-i18n="nav.decks">Prezentări</a>
+    <a href="#stats" data-tab="stats" data-min="editor" data-i18n="nav.stats">Statistici</a>
+    <a href="#users" data-tab="users" data-min="admin" data-i18n="nav.users">Utilizatori</a>
+    <a href="#log" data-tab="log" data-min="admin" data-i18n="nav.log">Jurnal</a>
+    <a href="#settings" data-tab="settings" data-min="admin" data-i18n="nav.settings">Setări</a>
+    <a href="#backup" data-tab="backup" data-min="admin" data-i18n="nav.backup">Backup</a>
+    <a href="#account" data-tab="account" data-i18n="nav.account">Contul meu</a>
   </nav>
 
   <!-- ================= presentations ================= -->
   <section id="t-decks" hidden>
     <div id="editor-tools" hidden>
       <div class="upform">
-        <label>Catalog <input type="text" id="up-catalog" list="up-catalogs" placeholder="de ex. Zeigebuch"></label>
-        <label>Limba <select id="up-lang"><option value="">Detectează din numele fișierului</option><option>DE</option><option>FR</option><option>IT</option><option>EN</option><option>RO</option><option value="XX">Altă limbă</option></select></label>
+        <label><span data-i18n="up.catalog">Catalog</span> <input type="text" id="up-catalog" list="up-catalogs" data-i18n-ph="up.catalogPh"></label>
+        <label><span data-i18n="up.lang">Limba</span>
+          <select id="up-lang"><option value="" data-i18n="up.langAuto">Detectează din numele fișierului</option><option>DE</option><option>FR</option><option>IT</option><option>EN</option><option>RO</option><option value="XX" data-i18n="lang.XX">Altă limbă</option></select></label>
         <datalist id="up-catalogs"></datalist>
       </div>
       <label id="drop">
         <input type="file" id="file" accept="application/pdf,.pdf" multiple hidden>
-        <b>Trage aici PDF-ul exportat din InDesign</b> sau apasă pentru a alege fișierul.<br>
-        <span class="small">Export din InDesign: File → Export → Adobe PDF (Interactive). După încărcare primești raportul de probleme.</span>
+        <b data-i18n="up.drop">Trage aici PDF-ul exportat din InDesign</b> <span data-i18n="up.dropOr">sau apasă pentru a alege fișierul.</span><br>
+        <span class="small" data-i18n="up.dropHint"></span>
       </label>
       <div id="uploads"></div>
     </div>
@@ -45,54 +49,53 @@
   <!-- ================= statistics ================= -->
   <section id="t-stats" hidden>
     <div class="tiles" id="st-tiles"></div>
-    <div class="panel"><h2>Prezentări</h2><div class="tablewrap"><table id="st-decks"></table></div></div>
-    <div class="panel"><h2>Ultimele deschideri</h2><div class="tablewrap"><table id="st-recent"></table></div></div>
+    <div class="panel"><h2 data-i18n="st.decks">Prezentări</h2><div class="tablewrap"><table id="st-decks"></table></div></div>
+    <div class="panel"><h2 data-i18n="st.recent">Ultimele deschideri</h2><div class="tablewrap"><table id="st-recent"></table></div></div>
   </section>
 
   <!-- ================= users ================= -->
   <section id="t-users" hidden>
     <div class="panel">
-      <h2>Adaugă utilizator</h2>
-      <form id="nu" class="grid2" autocomplete="off">
-        <label class="field">Utilizator (pentru logare)<input id="nu-username" required pattern="[a-z0-9._\-]{3,40}" placeholder="de ex. ana.pop" autocapitalize="none" spellcheck="false"></label>
-        <label class="field">Nume afișat<input id="nu-name" placeholder="Ana Pop"></label>
-        <label class="field">Email (opțional)<input id="nu-email" type="email"></label>
-        <label class="field">Rol
+      <h2 data-i18n="us.add">Adaugă utilizator</h2>
+      <form id="nu" class="grid2" autocomplete="off" novalidate>
+        <label class="field"><span data-i18n="us.username"></span><input id="nu-username" data-i18n-ph="us.usernamePh" autocapitalize="none" spellcheck="false" autocomplete="off"></label>
+        <label class="field"><span data-i18n="us.name"></span><input id="nu-name" data-i18n-ph="us.namePh"></label>
+        <label class="field"><span data-i18n="us.email"></span><input id="nu-email" type="email"></label>
+        <label class="field"><span data-i18n="us.role"></span>
           <select id="nu-role">
-            <option value="viewer">Prezentator — vede și prezintă</option>
-            <option value="editor">Editor — încarcă, înlocuiește, șterge prezentări</option>
-            <option value="admin">Administrator — tot, inclusiv utilizatori și setări</option>
+            <option value="viewer" data-i18n="role.viewer.long"></option>
+            <option value="editor" data-i18n="role.editor.long"></option>
+            <option value="admin" data-i18n="role.admin.long"></option>
           </select>
         </label>
-        <label class="field">Parolă inițială
-          <span class="row"><input id="nu-password" type="text" required minlength="10" style="flex:1" autocomplete="new-password"><button type="button" id="nu-gen">Generează</button></span>
+        <label class="field"><span data-i18n="us.password"></span>
+          <span class="row"><input id="nu-password" type="text" style="flex:1" autocomplete="new-password"><button type="button" id="nu-gen" data-i18n="us.generate"></button></span>
         </label>
-        <div class="field">Acces la prezentări (pentru prezentatori)
-          <select id="nu-access"><option value="all">Toate prezentările</option><option value="groups">Doar ale grupurilor alese</option></select>
+        <div class="field"><span data-i18n="us.access"></span>
+          <select id="nu-access"><option value="all" data-i18n="us.accessAll"></option><option value="groups" data-i18n="us.accessGroups"></option></select>
           <div class="groupchecks" id="nu-groups" hidden></div>
         </div>
         <div class="field">
-          <label class="check"><input type="checkbox" id="nu-must" checked> Trebuie să-și schimbe parola la prima logare</label>
-          <div class="row" style="margin-top:6px"><button class="primary" id="nu-go">Creează utilizatorul</button></div>
+          <label class="check"><input type="checkbox" id="nu-must" checked> <span data-i18n="us.must"></span></label>
+          <div class="row" style="margin-top:6px"><button class="primary" id="nu-go" data-i18n="us.create"></button></div>
         </div>
       </form>
       <div class="err" id="nu-err"></div>
     </div>
-    <div class="panel"><h2>Utilizatori</h2><div class="tablewrap"><table id="users"></table></div></div>
+    <div class="panel"><h2 data-i18n="us.list">Utilizatori</h2><div class="tablewrap"><table id="users"></table></div></div>
     <div class="panel">
-      <h2>Grupuri de acces</h2>
-      <p class="hint" style="margin:-6px 0 12px">Un grup dă acces la anumite cataloage și limbi, de exemplu „Romandia” → limba FR.
-        Prezentatorii setați pe „Doar ale grupurilor alese” văd numai prezentările grupurilor lor. Editorii și administratorii văd tot.</p>
+      <h2 data-i18n="gr.title">Grupuri de acces</h2>
+      <p class="hint" style="margin:-6px 0 12px" data-i18n="gr.hint"></p>
       <div class="tablewrap"><table id="groups"></table></div>
       <form id="ng" class="grid2" style="margin-top:14px">
-        <label class="field">Nume grup nou<input id="ng-name" placeholder="de ex. Romandia" maxlength="60" required></label>
-        <div class="field">Cataloage (nimic bifat = toate)<div class="groupchecks" id="ng-catalogs"></div></div>
-        <div class="field">Limbi (nimic bifat = toate)<div class="groupchecks" id="ng-langs"></div></div>
-        <div class="field" style="align-self:end"><button class="primary" id="ng-go">Creează grupul</button></div>
+        <label class="field"><span data-i18n="gr.newName"></span><input id="ng-name" data-i18n-ph="gr.newNamePh" maxlength="60" required></label>
+        <div class="field"><span data-i18n="gr.catalogs"></span><div class="groupchecks" id="ng-catalogs"></div></div>
+        <div class="field"><span data-i18n="gr.langs"></span><div class="groupchecks" id="ng-langs"></div></div>
+        <div class="field"><button class="primary" id="ng-go" data-i18n="gr.create"></button></div>
       </form>
       <div class="err" id="ng-err"></div>
     </div>
-    <div class="panel"><h2>Sesiuni active</h2><p class="hint" style="margin:-6px 0 10px">Dispozitivele conectate acum. „Închide” deconectează dispozitivul imediat.</p><div class="tablewrap"><table id="sessions"></table></div></div>
+    <div class="panel"><h2 data-i18n="us.sessions">Sesiuni active</h2><p class="hint" style="margin:-6px 0 10px" data-i18n="us.sessionsHint"></p><div class="tablewrap"><table id="sessions"></table></div></div>
   </section>
 
   <!-- ================= log ================= -->
@@ -100,114 +103,105 @@
     <div class="panel">
       <div class="row">
         <select id="lg-type">
-          <option value="">Toate evenimentele</option>
-          <option value="auth.">Autentificări</option>
-          <option value="auth.login_failed">Doar autentificări eșuate</option>
-          <option value="user.">Utilizatori</option>
-          <option value="deck.">Prezentări (toate)</option>
-          <option value="deck.view">Prezentări deschise</option>
-          <option value="settings.">Setări</option>
+          <option value="" data-i18n="lg.all"></option>
+          <option value="auth." data-i18n="lg.auth"></option>
+          <option value="auth.login_failed" data-i18n="lg.failed"></option>
+          <option value="user." data-i18n="lg.users"></option>
+          <option value="deck." data-i18n="lg.decks"></option>
+          <option value="deck.view" data-i18n="lg.views"></option>
+          <option value="settings." data-i18n="lg.settings"></option>
+          <option value="backup." data-i18n="lg.backup"></option>
         </select>
-        <input id="lg-user" placeholder="Utilizator" style="width:150px" autocapitalize="none">
-        <input id="lg-q" placeholder="Caută (IP, prezentare, detalii)" style="flex:1;min-width:180px">
-        <button id="lg-go" class="primary" type="button">Filtrează</button>
-        <button id="lg-csv" type="button">Descarcă CSV</button>
+        <input id="lg-user" data-i18n-ph="lg.userPh" style="width:150px" autocapitalize="none">
+        <input id="lg-q" data-i18n-ph="lg.searchPh" style="flex:1;min-width:180px">
+        <button id="lg-go" class="primary" type="button" data-i18n="lg.filter"></button>
+        <button id="lg-csv" type="button" data-i18n="lg.csv"></button>
       </div>
     </div>
     <div class="panel"><div class="tablewrap"><table id="log"></table></div>
-      <div class="row" style="margin-top:12px;justify-content:center"><button id="lg-more" type="button">Arată mai multe</button></div></div>
+      <div class="row" style="margin-top:12px;justify-content:center"><button id="lg-more" type="button" data-i18n="lg.more"></button></div></div>
   </section>
 
   <!-- ================= settings ================= -->
   <section id="t-settings" hidden>
     <form id="sf">
       <div class="panel">
-        <h2>General</h2>
+        <h2 data-i18n="se.general"></h2>
         <div class="grid2">
-          <label class="field">Numele platformei<input id="s-siteName" maxlength="60"></label>
-          <label class="field">Cine poate deschide prezentările
-            <select id="s-access">
-              <option value="login">Doar utilizatorii autentificați</option>
-              <option value="public">Oricine are linkul</option>
-            </select>
+          <label class="field"><span data-i18n="se.siteName"></span><input id="s-siteName" maxlength="60"></label>
+          <label class="field"><span data-i18n="se.access"></span>
+            <select id="s-access"><option value="login" data-i18n="se.accessLogin"></option><option value="public" data-i18n="se.accessPublic"></option></select>
           </label>
         </div>
-        <p class="hint">O prezentare anume poate fi deschisă fără cont dacă bifezi „Link public” în setările ei.</p>
-        <label class="check" style="margin-top:10px"><input type="checkbox" id="s-logViews"> Înregistrează în jurnal fiecare deschidere de prezentare</label>
+        <p class="hint" data-i18n="se.accessHint"></p>
+        <label class="check" style="margin-top:10px"><input type="checkbox" id="s-logViews"> <span data-i18n="se.logViews"></span></label>
       </div>
       <div class="panel">
-        <h2>Securitate</h2>
+        <h2 data-i18n="se.security"></h2>
         <div class="grid2">
-          <label class="field">Sesiunea expiră după (zile)<input id="s-sessionDays" type="number" min="1" max="365"></label>
-          <label class="field">Încercări greșite până la blocare<input id="s-maxAttempts" type="number" min="3" max="20"></label>
-          <label class="field">Durata blocării (minute)<input id="s-lockMinutes" type="number" min="1" max="1440"></label>
+          <label class="field"><span data-i18n="se.sessionDays"></span><input id="s-sessionDays" type="number" min="1" max="365"></label>
+          <label class="field"><span data-i18n="se.maxAttempts"></span><input id="s-maxAttempts" type="number" min="3" max="20"></label>
+          <label class="field"><span data-i18n="se.lockMinutes"></span><input id="s-lockMinutes" type="number" min="1" max="1440"></label>
         </div>
-        <p class="hint">Pe iPad, o sesiune lungă înseamnă că prezentatorii nu trebuie să se autentifice des.</p>
+        <p class="hint" data-i18n="se.securityHint"></p>
       </div>
       <div class="panel">
-        <h2>Setări implicite pentru prezentările noi</h2>
+        <h2 data-i18n="se.defaults"></h2>
         <div class="settings" id="s-presenter"></div>
       </div>
       <div class="panel">
-        <h2>Notificări pe email</h2>
+        <h2 data-i18n="se.notify"></h2>
         <div id="n-status" class="banner"></div>
         <div class="grid2">
-          <label class="field">Destinatari (câte o adresă pe rând)<textarea id="n-recipients" rows="3" spellcheck="false"></textarea></label>
-          <div class="field">Trimite email când
-            <div id="n-events" style="display:grid;gap:6px;margin-top:4px"></div>
-          </div>
+          <label class="field"><span data-i18n="se.recipients"></span><textarea id="n-recipients" rows="3" spellcheck="false"></textarea></label>
+          <div class="field"><span data-i18n="se.sendWhen"></span><div id="n-events" style="display:grid;gap:6px;margin-top:4px"></div></div>
         </div>
-        <div class="row" style="margin-top:12px"><button type="button" id="n-test">Trimite un email de test</button><span class="hint" id="n-test-msg"></span></div>
+        <div class="row" style="margin-top:12px"><button type="button" id="n-test" data-i18n="se.test"></button><span class="hint" id="n-test-msg"></span></div>
       </div>
-      <div class="row"><button class="primary" id="s-save">Salvează setările</button><span class="err" id="s-err"></span></div>
+      <div class="row"><button class="primary" id="s-save" data-i18n="se.save"></button><span class="err" id="s-err"></span></div>
     </form>
   </section>
 
   <!-- ================= backup ================= -->
   <section id="t-backup" hidden>
     <div class="panel">
-      <h2>Backup automat</h2>
-      <p class="hint" style="margin:-6px 0 12px">Un backup conține utilizatorii, grupurile, setările, toate prezentările (PDF, rapoarte, miniaturi) și jurnalul.
-        Backup-urile stau pe același disc ca platforma, așa că descarcă din când în când unul pe calculatorul tău.</p>
+      <h2 data-i18n="bk.auto"></h2>
+      <p class="hint" style="margin:-6px 0 12px" data-i18n="bk.hint"></p>
       <div class="row">
-        <label class="check"><input type="checkbox" id="b-auto"> Fă un backup automat o dată pe zi</label>
-        <label class="row" style="gap:6px">păstrează ultimele <input id="b-keep" type="number" min="1" max="60" style="width:70px"> backup-uri automate</label>
-        <button id="b-save" type="button">Salvează</button>
+        <label class="check"><input type="checkbox" id="b-auto"> <span data-i18n="bk.daily"></span></label>
+        <label class="row" style="gap:6px"><span data-i18n="bk.keep1"></span> <input id="b-keep" type="number" min="1" max="60" style="width:70px"> <span data-i18n="bk.keep2"></span></label>
+        <button id="b-save" type="button" data-i18n="common.save"></button>
       </div>
     </div>
     <div class="panel">
       <div class="row" style="justify-content:space-between;margin-bottom:10px">
-        <h2 style="margin:0">Backup-uri</h2>
-        <div class="row"><span class="hint" id="b-total"></span><button class="primary" id="b-now" type="button">Creează backup acum</button></div>
+        <h2 style="margin:0" data-i18n="bk.list"></h2>
+        <div class="row"><span class="hint" id="b-total"></span><button class="primary" id="b-now" type="button" data-i18n="bk.now"></button></div>
       </div>
       <div class="tablewrap"><table id="b-list"></table></div>
     </div>
     <div class="panel">
-      <h2>Restaurare dintr-un fișier</h2>
-      <p class="hint" style="margin:-6px 0 12px">Înlocuiește toate datele actuale cu cele din backup. Înainte, platforma face automat o copie a stării actuale.
-        Toată lumea va trebui să se autentifice din nou, iar serverul repornește (durează câteva secunde).</p>
-      <div class="row"><input type="file" id="r-file" accept=".zip,application/zip"><button id="r-go" class="danger" type="button" disabled>Restaurează din fișier</button></div>
+      <h2 data-i18n="bk.fromFile"></h2>
+      <p class="hint" style="margin:-6px 0 12px" data-i18n="bk.fromFileHint"></p>
+      <div class="row"><input type="file" id="r-file" accept=".zip,application/zip"><button id="r-go" class="danger" type="button" disabled data-i18n="bk.fromFileGo"></button></div>
       <div class="err" id="r-err"></div>
     </div>
   </section>
 
   <!-- ================= my account ================= -->
   <section id="t-account" hidden>
-    <div class="banner warn" id="must-banner" hidden>Pentru siguranță, alege o parolă nouă înainte de a continua.</div>
+    <div class="banner warn" id="must-banner" hidden data-i18n="acc.must"></div>
+    <div class="panel"><h2 data-i18n="acc.title"></h2><div class="grid2" id="acc-info"></div></div>
     <div class="panel">
-      <h2>Contul meu</h2>
-      <div class="grid2" id="acc-info"></div>
-    </div>
-    <div class="panel">
-      <h2>Schimbă parola</h2>
+      <h2 data-i18n="acc.change"></h2>
       <form id="pw" class="grid2" autocomplete="on">
         <input type="text" autocomplete="username" id="pw-user" hidden>
-        <label class="field">Parola actuală<input id="pw-cur" type="password" autocomplete="current-password" required></label>
-        <label class="field">Parola nouă<input id="pw-new" type="password" autocomplete="new-password" required minlength="10"></label>
-        <label class="field">Repetă parola nouă<input id="pw-new2" type="password" autocomplete="new-password" required minlength="10"></label>
-        <div class="field" style="align-self:end"><button class="primary" id="pw-go">Schimbă parola</button></div>
+        <label class="field"><span data-i18n="acc.current"></span><input id="pw-cur" type="password" autocomplete="current-password" required></label>
+        <label class="field"><span data-i18n="acc.new"></span><input id="pw-new" type="password" autocomplete="new-password" required minlength="10"></label>
+        <label class="field"><span data-i18n="acc.new2"></span><input id="pw-new2" type="password" autocomplete="new-password" required minlength="10"></label>
+        <div class="field" style="align-self:end"><button class="primary" id="pw-go" data-i18n="acc.change"></button></div>
       </form>
-      <p class="hint">Minimum 10 caractere, cu litere și cifre. După schimbare, celelalte dispozitive conectate sunt deconectate.</p>
+      <p class="hint" data-i18n="acc.hint"></p>
       <div class="err" id="pw-err"></div>
     </div>
   </section>
@@ -215,18 +209,18 @@
 
 <dialog id="qr" class="qr">
   <div id="qr-title" style="font-weight:650"></div>
-  <img id="qr-img" alt="Cod QR">
-  <div class="small muted" style="margin-bottom:14px">Scanează cu camera iPad-ului pentru a deschide prezentarea.</div>
-  <form method="dialog"><button>Închide</button></form>
+  <img id="qr-img" alt="QR">
+  <div class="small muted" style="margin-bottom:14px" data-i18n="qr.hint"></div>
+  <form method="dialog"><button data-i18n="common.close"></button></form>
 </dialog>
-<dialog id="report" class="report"><div id="report-body"></div><div class="rfoot"><button id="report-close" type="button">Închide</button></div></dialog>
+<dialog id="report" class="report"><div id="report-body"></div><div class="rfoot"><button id="report-close" type="button" data-i18n="common.close"></button></div></dialog>
 <dialog id="access" class="report">
-  <h2 style="margin:0 0 4px">Acces la prezentări</h2>
+  <h2 style="margin:0 0 4px" data-i18n="ac.title"></h2>
   <p class="muted" id="ac-user" style="margin:0 0 12px"></p>
-  <label class="check"><input type="radio" name="ac" value="all"> Toate prezentările</label>
-  <label class="check" style="margin-top:6px"><input type="radio" name="ac" value="groups"> Doar prezentările grupurilor alese:</label>
+  <label class="check"><input type="radio" name="ac" value="all"> <span data-i18n="ac.all"></span></label>
+  <label class="check" style="margin-top:6px"><input type="radio" name="ac" value="groups"> <span data-i18n="ac.groups"></span></label>
   <div class="groupchecks" id="ac-groups" style="margin:8px 0 0 24px"></div>
-  <div class="rfoot"><button type="button" id="ac-cancel">Renunță</button> <button type="button" class="primary" id="ac-save">Salvează</button></div>
+  <div class="rfoot"><button type="button" id="ac-cancel" data-i18n="common.cancel"></button> <button type="button" class="primary" id="ac-save" data-i18n="common.save"></button></div>
 </dialog>
 <div class="toast" id="toast"></div>
 <script type="module" src="/admin.js"></script>

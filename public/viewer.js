@@ -1,4 +1,6 @@
 import * as pdfjsLib from '/vendor/pdfjs/pdf.min.mjs';
+import { t, applyI18n } from '/i18n.js';
+applyI18n();
 
 pdfjsLib.GlobalWorkerOptions.workerSrc = '/vendor/pdfjs/pdf.worker.min.mjs';
 const V = location.origin + '/vendor/pdfjs/';
@@ -24,12 +26,12 @@ async function load() {
   const r = await fetch(`/p/${encodeURIComponent(slug)}/deck.json`, { cache: 'no-cache' }).catch(() => null)
     || await caches?.match?.(`/p/${encodeURIComponent(slug)}/deck.json`);
   if (r && r.status === 401) { location.href = '/login?next=' + encodeURIComponent(location.pathname); return; }
-  if (!r || !r.ok) throw new Error('Prezentarea nu a putut fi încărcată.');
+  if (!r || !r.ok) throw new Error(t('pv.loadFailed'));
   deck = await r.json();
   document.documentElement.style.setProperty('--bg', deck.settings.background);
 
   const bytes = await fetchWithProgress(deck.pdf, (p) => { $('progress').style.width = (p * 100).toFixed(1) + '%'; });
-  $('loadmsg').textContent = 'Se pregătește…';
+  $('loadmsg').textContent = t('pv.preparing');
 
   pdf = await pdfjsLib.getDocument({
     data: bytes, cMapUrl: V + 'cmaps/', cMapPacked: true, standardFontDataUrl: V + 'standard_fonts/',
@@ -56,9 +58,9 @@ async function load() {
   if (isStandalone() || isFullscreen()) start(false);
   else {
     if (!canFullscreen()) {
-      $('go').textContent = 'Pornește';
+      $('go').textContent = t('pv.startPlain');
       $('go-window').hidden = true;
-      $('start-hint').innerHTML = 'Pentru ecran complet: apasă <b>Share → Add to Home Screen</b> și deschide prezentarea de pe ecranul principal.<br><br>Ține apăsat o secundă (sau atinge cu două degete) pentru meniu.';
+      $('start-hint').innerHTML = t('pv.hintHome');
     }
     $('start').hidden = false;
   }
@@ -345,10 +347,11 @@ document.addEventListener('keydown', (e) => {
   if (!deck || !pdf) return;
   if (!$('menu').hidden) { if (e.key === 'Escape' || e.key === 'm') closeMenu(); return; }
   switch (e.key) {
-    case 'ArrowRight': case 'ArrowDown': case 'PageDown': case ' ': case 'Enter': next(); break;
-    case 'ArrowLeft': case 'ArrowUp': case 'PageUp': case 'Backspace': prev(); break;
-    case 'Home': go(0); break;
-    case 'End': go(deck.pageCount - 1); break;
+    // with free navigation off, pages change only through the PDF's buttons
+    case 'ArrowRight': case 'ArrowDown': case 'PageDown': case ' ': case 'Enter': if (deck.settings.swipe) next(); break;
+    case 'ArrowLeft': case 'ArrowUp': case 'PageUp': case 'Backspace': if (deck.settings.swipe) prev(); break;
+    case 'Home': if (deck.settings.swipe) go(0); break;
+    case 'End': if (deck.settings.swipe) go(deck.pageCount - 1); break;
     case 'm': case 'Escape': openMenu(); break;
     case 'f': toggleFullscreen(); break;
     case 'd': document.body.classList.toggle('debug'); break;
@@ -395,7 +398,7 @@ let thumbObserver;
 function openMenu() {
   const grid = $('grid');
   $('m-fs').hidden = !canFullscreen() || isStandalone();
-  $('m-fs').textContent = isFullscreen() ? 'Ieși din full screen' : 'Full screen';
+  $('m-fs').textContent = t(isFullscreen() ? 'pv.fsExit' : 'pv.fs');
   if (!grid.childElementCount) {
     thumbObserver = new IntersectionObserver((entries) => {
       for (const en of entries) if (en.isIntersecting) { drawThumb(Number(en.target.dataset.n), en.target.querySelector('.img')); thumbObserver.unobserve(en.target); }
@@ -440,13 +443,13 @@ async function checkOffline() {
   const base = `/p/${encodeURIComponent(slug)}`;
   reg?.active?.postMessage({ cache: [deck.pdf, base, base + '/deck.json', base + '/manifest.webmanifest'] });
   for (let i = 0; i < 40; i++) {
-    if (await caches.match(deck.pdf)) { $('m-offline').textContent = '✓ Disponibilă și offline pe acest dispozitiv'; return; }
+    if (await caches.match(deck.pdf)) { $('m-offline').textContent = t('pv.offline'); return; }
     await new Promise((r) => setTimeout(r, 1500));
   }
 }
 
 load().catch((err) => {
   console.error(err);
-  $('loadmsg').textContent = err.message || 'Eroare la încărcare.';
+  $('loadmsg').textContent = err.message || t('pv.loadFailed');
   $('loadmsg').classList.add('error');
 });

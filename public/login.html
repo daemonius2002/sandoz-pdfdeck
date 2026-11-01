@@ -4,40 +4,50 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="apple-mobile-web-app-capable" content="yes">
-<title>Autentificare</title>
-<link rel="icon" href="/icon.png">
+<title>SANDOZ PRESENTING DECK</title>
+<link rel="icon" href="/favicon.png">
+<link rel="apple-touch-icon" href="/apple-touch-icon.png">
+<script>try { const t = localStorage.getItem('pdfdeck.theme'); if (t === 'light' || t === 'dark') document.documentElement.dataset.theme = t; } catch {}</script>
 <link rel="stylesheet" href="/admin.css">
 </head>
 <body class="login-page">
   <main class="login-card">
-    <div class="brand"><div class="mark">PD</div><b id="site">PDF Deck</b></div>
-    <h1>Autentificare</h1>
+    <div class="switches" id="switches"></div>
+    <div class="brand"><img class="mark" src="/brand.png" alt=""><b id="site">SANDOZ PRESENTING DECK</b></div>
+    <h1 data-i18n="login.title">Autentificare</h1>
     <form id="f" autocomplete="on">
-      <label>Utilizator<input id="u" name="username" autocomplete="username" autocapitalize="none" spellcheck="false" required></label>
-      <label>Parolă<input id="p" name="password" type="password" autocomplete="current-password" required></label>
+      <label><span data-i18n="login.user">Utilizator</span><input id="u" name="username" autocomplete="username" autocapitalize="none" spellcheck="false" required></label>
+      <label><span data-i18n="login.password">Parolă</span><input id="p" name="password" type="password" autocomplete="current-password" required></label>
       <div class="err" id="err" role="alert"></div>
-      <button class="btn primary wide" id="go">Intră</button>
+      <button class="btn primary wide" id="go" data-i18n="login.go">Intră</button>
     </form>
-    <p class="muted small">Ai uitat parola? Cere administratorului să ți-o reseteze.</p>
+    <p class="muted small" data-i18n="login.forgot">Ai uitat parola? Cere administratorului să ți-o reseteze.</p>
   </main>
-<script>
+<script type="module">
+  import { t, applyI18n, mountSwitches } from '/i18n.js';
+  applyI18n();
+  mountSwitches(document.getElementById('switches'));
+  const $ = (id) => document.getElementById(id);
   const next = (() => { const n = new URLSearchParams(location.search).get('next') || '/admin'; return /^\/(?!\/)/.test(n) ? n : '/admin'; })();
+  let site = 'SANDOZ PRESENTING DECK';
+  const title = () => { document.title = `${t('login.title')} · ${site}`; };
+  title(); window.addEventListener('langchange', title);
   fetch('/api/me').then((r) => r.json()).then((m) => {
-    document.getElementById('site').textContent = m.siteName || 'PDF Deck';
+    site = m.siteName || site; $('site').textContent = site; title();
     if (m.user && !m.user.mustChangePassword) location.replace(next);
-    if (m.needsSetup) document.getElementById('err').textContent = 'Nu există încă un administrator. Setează ADMIN_PASSWORD pe server și repornește-l.';
+    if (m.needsSetup) $('err').textContent = t('login.setup');
   }).catch(() => {});
-  document.getElementById('f').addEventListener('submit', async (e) => {
+  $('f').addEventListener('submit', async (e) => {
     e.preventDefault();
-    const btn = document.getElementById('go'), err = document.getElementById('err');
+    const btn = $('go'), err = $('err');
     btn.disabled = true; err.textContent = '';
     try {
       const r = await fetch('/api/login', { method: 'POST', headers: { 'Content-Type': 'application/json', 'X-PDFDeck': '1' },
-        body: JSON.stringify({ username: document.getElementById('u').value, password: document.getElementById('p').value }) });
+        body: JSON.stringify({ username: $('u').value, password: $('p').value }) });
       const d = await r.json().catch(() => ({}));
-      if (!r.ok) { err.textContent = d.error || 'Autentificarea nu a reușit.'; document.getElementById('p').select(); return; }
+      if (!r.ok) { err.textContent = d.error || t('login.failed'); $('p').select(); return; }
       location.replace(d.user?.mustChangePassword ? '/admin#account' : next);
-    } catch { err.textContent = 'Serverul nu răspunde. Verifică conexiunea.'; }
+    } catch { err.textContent = t('login.offline'); }
     finally { btn.disabled = false; }
   });
 </script>

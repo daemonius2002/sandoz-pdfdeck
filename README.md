@@ -1,4 +1,4 @@
-# PDF Deck — prezentări InDesign interactive pe iPad
+# SANDOZ PRESENTING DECK — prezentări InDesign interactive pe iPad
 
 Încarci PDF-ul exportat din InDesign (*File → Export → Adobe PDF (Interactive)*), primești o adresă
 `https://server/p/nume-prezentare` și o deschizi pe iPad pe tot ecranul, cu butoanele funcționale.
@@ -60,6 +60,11 @@ Din `/admin`:
   utilizatori creați / șterși / dezactivați, backup eșuat. Buton pentru email de test.
 
 Parolele sunt stocate doar ca hash (scrypt). Parola serverului de email stă doar în variabilele de mediu, nu în date sau în backup. Datele stau în `DATA_DIR`: `users.json`, `sessions.json`, `settings.json`, `decks.json`, `logs/`.
+
+## Limbă și temă
+
+Interfața (admin, logare, ecranul de start al prezentării) este în **română și engleză**, iar tema poate fi **Zi**, **Noapte** sau **Automat** (după setarea dispozitivului).
+Butoanele RO | EN și Zi | Noapte | Automat sunt în colțul de sus; alegerea se ține minte pe fiecare dispozitiv.
 
 ## Flux de lucru
 
