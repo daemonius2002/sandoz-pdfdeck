@@ -13,7 +13,8 @@
 <body class="login-page">
   <main class="login-card">
     <div class="switches" id="switches"></div>
-    <div class="brand"><img class="mark" src="/brand.png" alt=""><b id="site">SANDOZ PRESENTING DECK</b></div>
+    <img class="logo" src="/icon.png" alt="">
+    <div class="site" id="site">SANDOZ PRESENTING DECK</div>
     <h1 data-i18n="login.title">Autentificare</h1>
     <form id="f" autocomplete="on">
       <label><span data-i18n="login.user">Utilizator</span><input id="u" name="username" autocomplete="username" autocapitalize="none" spellcheck="false" required></label>
@@ -21,7 +22,7 @@
       <div class="err" id="err" role="alert"></div>
       <button class="btn primary wide" id="go" data-i18n="login.go">Intră</button>
     </form>
-    <p class="muted small" data-i18n="login.forgot">Ai uitat parola? Cere administratorului să ți-o reseteze.</p>
+    <p class="foot" data-i18n="login.forgot">Ai uitat parola? Cere administratorului să ți-o reseteze.</p>
   </main>
 <script type="module">
   import { t, applyI18n, mountSwitches, wireEyes } from '/i18n.js';

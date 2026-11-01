@@ -168,6 +168,28 @@ const RO = {
   'pv.hintHome': 'Pentru ecran complet: apasă <b>Share → Add to Home Screen</b> și deschide prezentarea de pe ecranul principal.<br><br>Ține apăsat o secundă (sau atinge cu două degete) pentru meniu.',
   'pv.fs': 'Full screen', 'pv.fsExit': 'Ieși din full screen', 'pv.back': 'Înapoi la prezentare',
   'pv.offline': '✓ Disponibilă și offline pe acest dispozitiv', 'pv.debug': 'Arată zonele interactive',
+
+  // dashboard, map, location, redesign
+  'nav.home': 'Panou', 'nav.menu': 'Meniu',
+  'home.title': 'Panou', 'home.sub': 'Ce se întâmplă pe platformă în ultimele 30 de zile.',
+  'decks.title': 'Prezentări', 'decks.sub': 'Biblioteca de cataloage. Apasă PLAY pentru a prezenta.',
+  'decks.search': 'Caută după titlu sau catalog', 'decks.allLangs': 'Toate limbile', 'decks.upload': 'Încarcă PDF', 'decks.noMatch': 'Nicio prezentare nu se potrivește căutării.',
+  'deck.more': 'Setări', 'deck.views': '{n} deschideri', 'deck.ok': 'Fără erori', 'deck.pages': '{n} pagini', 'deck.buttons': '{n} butoane',
+  'deck.dlgTitle': 'Setările prezentării', 'deck.actions': 'Acțiuni', 'deck.link': 'Link direct',
+  'users.title': 'Utilizatori', 'users.sub': 'Conturi, roluri, acces pe grupuri și dispozitive conectate.', 'users.add': 'Adaugă utilizator',
+  'log.title': 'Jurnal', 'log.sub': 'Tot ce s-a întâmplat: logări, încărcări, modificări, deschideri.',
+  'settings.title': 'Setări', 'settings.sub': 'Configurarea platformei.',
+  'backup.title': 'Backup', 'backup.sub': 'Copii de siguranță ale tuturor datelor.',
+  'account.title': 'Contul meu', 'account.sub': 'Datele tale și parola.',
+  'geo.col': 'Locație', 'geo.local': 'Rețea locală', 'geo.unknown': '—',
+  'map.title': 'De unde se folosește platforma', 'map.views': 'Deschideri', 'map.logins': 'Logări', 'map.failed': 'Logări eșuate', 'map.all': 'Toate',
+  'map.empty': 'Încă nu există date de localizare. Punctele apar după primele logări și deschideri de prezentări.',
+  'map.notReady': 'Baza de date de localizare se descarcă (durează câteva minute după prima pornire). Logările de acum încolo vor avea locația.',
+  'map.attrib': 'Locație aproximativă după adresa IP.', 'map.users': 'Utilizatori', 'map.decks': 'Prezentări', 'map.last': 'Ultima activitate',
+  'map.localNote': '{n} evenimente din rețeaua locală nu apar pe hartă.',
+  'places.title': 'Țări și orașe', 'places.col.place': 'Loc', 'places.col.views': 'Deschideri', 'places.col.logins': 'Logări', 'places.col.failed': 'Eșuate',
+  'deck.kErr1': '1 eroare', 'deck.kErr': '{n} erori', 'deck.kWarn': '{n} avertismente', 'deck.kNoBtn': 'Fără butoane', 'deck.inLangs': '{n} limbi', 'home.noActivity': 'Nicio activitate încă.',
+  'home.recent': 'Activitate recentă', 'home.allLog': 'Tot jurnalul →', 'home.decks': 'Prezentări după deschideri',
 };
 
 const EN = {
@@ -324,6 +346,27 @@ const EN = {
   'pv.hintHome': 'For full screen: tap <b>Share → Add to Home Screen</b> and open the presentation from the home screen.<br><br>Press and hold for a second (or tap with two fingers) for the menu.',
   'pv.fs': 'Full screen', 'pv.fsExit': 'Exit full screen', 'pv.back': 'Back to the presentation',
   'pv.offline': '✓ Also available offline on this device', 'pv.debug': 'Show interactive areas',
+
+  'nav.home': 'Dashboard', 'nav.menu': 'Menu',
+  'home.title': 'Dashboard', 'home.sub': 'What happened on the platform in the last 30 days.',
+  'decks.title': 'Presentations', 'decks.sub': 'The catalogue library. Press PLAY to present.',
+  'decks.search': 'Search by title or catalogue', 'decks.allLangs': 'All languages', 'decks.upload': 'Upload PDF', 'decks.noMatch': 'No presentation matches the search.',
+  'deck.more': 'Settings', 'deck.views': '{n} views', 'deck.ok': 'No errors', 'deck.pages': '{n} pages', 'deck.buttons': '{n} buttons',
+  'deck.dlgTitle': 'Presentation settings', 'deck.actions': 'Actions', 'deck.link': 'Direct link',
+  'users.title': 'Users', 'users.sub': 'Accounts, roles, group access and signed-in devices.', 'users.add': 'Add user',
+  'log.title': 'Activity log', 'log.sub': 'Everything that happened: sign-ins, uploads, changes, views.',
+  'settings.title': 'Settings', 'settings.sub': 'Platform configuration.',
+  'backup.title': 'Backup', 'backup.sub': 'Safety copies of all data.',
+  'account.title': 'My account', 'account.sub': 'Your details and password.',
+  'geo.col': 'Location', 'geo.local': 'Local network', 'geo.unknown': '—',
+  'map.title': 'Where the platform is used', 'map.views': 'Views', 'map.logins': 'Sign-ins', 'map.failed': 'Failed sign-ins', 'map.all': 'All',
+  'map.empty': 'No location data yet. Points appear after the first sign-ins and presentation views.',
+  'map.notReady': 'The location database is downloading (takes a few minutes after the first start). Sign-ins from now on will have a location.',
+  'map.attrib': 'Approximate location from the IP address.', 'map.users': 'Users', 'map.decks': 'Presentations', 'map.last': 'Last activity',
+  'map.localNote': '{n} events from the local network are not on the map.',
+  'places.title': 'Countries and cities', 'places.col.place': 'Place', 'places.col.views': 'Views', 'places.col.logins': 'Sign-ins', 'places.col.failed': 'Failed',
+  'deck.kErr1': '1 error', 'deck.kErr': '{n} errors', 'deck.kWarn': '{n} warnings', 'deck.kNoBtn': 'No buttons', 'deck.inLangs': '{n} languages', 'home.noActivity': 'No activity yet.',
+  'home.recent': 'Recent activity', 'home.allLog': 'Full log →', 'home.decks': 'Presentations by views',
 };
 
 // Activity-log event names

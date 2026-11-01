@@ -61,6 +61,20 @@ Din `/admin`:
 
 Parolele sunt stocate doar ca hash (scrypt). Parola serverului de email stă doar în variabilele de mediu, nu în date sau în backup. Datele stau în `DATA_DIR`: `users.json`, `sessions.json`, `settings.json`, `decks.json`, `logs/`.
 
+## Locația logărilor și harta
+
+Fiecare logare, logare eșuată și deschidere de prezentare primește locația aproximativă (țară, oraș),
+calculată **pe server** din adresa IP, în baza de date gratuită DB-IP „IP to City Lite” (licență CC BY 4.0).
+Nicio adresă IP nu este trimisă către alt serviciu. La prima pornire serverul descarcă baza (~120 MB) în
+`/data/geo` și o reîmprospătează lunar; până se termină descărcarea, harta afișează un mesaj.
+
+- **Panou** → harta (fundal OpenStreetMap / CARTO, zi sau noapte după temă), filtre Deschideri / Logări / Eșuate,
+  tabel cu țări și orașe, activitate recentă.
+- **Jurnal** și **Sesiuni active** au coloana *Locație*; exportul CSV o include.
+- Variabile opționale: `GEOIP=off` oprește localizarea; `GEOIP_DB_PATH=/cale/fisier.mmdb` folosește altă bază
+  (de ex. MaxMind GeoLite2-City).
+- Locația după IP este aproximativă (orașul furnizorului de internet; prin VPN apare țara VPN-ului).
+
 ## Limbă și temă
 
 Interfața (admin, logare, ecranul de start al prezentării) este în **română și engleză**, iar tema poate fi **Zi**, **Noapte** sau **Automat** (după setarea dispozitivului).

@@ -3,130 +3,149 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#f5f5f7" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#000000" media="(prefers-color-scheme: dark)">
 <title>SANDOZ PRESENTING DECK</title>
 <link rel="icon" href="/favicon.png">
 <link rel="apple-touch-icon" href="/apple-touch-icon.png">
 <script>try { const t = localStorage.getItem('pdfdeck.theme'); if (t === 'light' || t === 'dark') document.documentElement.dataset.theme = t; } catch {}</script>
+<link rel="stylesheet" href="/vendor/leaflet/leaflet.css">
 <link rel="stylesheet" href="/admin.css">
 </head>
 <body>
-<div class="wrap">
-  <header class="top">
-    <div class="brand"><img class="mark" src="/brand.png" alt=""><b id="site">SANDOZ PRESENTING DECK</b></div>
-    <div class="switches" id="switches"></div>
-    <div class="who"><span id="me-name"></span><span class="role" id="me-role"></span></div>
-    <button id="logout" type="button" data-i18n="top.logout">Ieșire</button>
-  </header>
-  <nav class="tabs" id="tabs">
-    <a href="#decks" data-tab="decks" data-i18n="nav.decks">Prezentări</a>
-    <a href="#stats" data-tab="stats" data-min="editor" data-i18n="nav.stats">Statistici</a>
-    <a href="#users" data-tab="users" data-min="admin" data-i18n="nav.users">Utilizatori</a>
-    <a href="#log" data-tab="log" data-min="admin" data-i18n="nav.log">Jurnal</a>
-    <a href="#settings" data-tab="settings" data-min="admin" data-i18n="nav.settings">Setări</a>
-    <a href="#backup" data-tab="backup" data-min="admin" data-i18n="nav.backup">Backup</a>
-    <a href="#account" data-tab="account" data-i18n="nav.account">Contul meu</a>
-  </nav>
+<header class="topnav">
+  <div class="in">
+    <a class="brand" href="#decks"><img src="/brand.png" alt=""><b id="site">SANDOZ PRESENTING DECK</b></a>
+    <nav id="nav" aria-label="main">
+      <a href="#home" data-tab="home" data-min="editor" data-i18n="nav.home">Panou</a>
+      <a href="#decks" data-tab="decks" data-i18n="nav.decks">Prezentări</a>
+      <a href="#users" data-tab="users" data-min="admin" data-i18n="nav.users">Utilizatori</a>
+      <a href="#log" data-tab="log" data-min="admin" data-i18n="nav.log">Jurnal</a>
+      <a href="#settings" data-tab="settings" data-min="admin" data-i18n="nav.settings">Setări</a>
+      <a href="#backup" data-tab="backup" data-min="admin" data-i18n="nav.backup">Backup</a>
+    </nav>
+    <div class="right">
+      <div class="switches" id="switches"></div>
+      <a class="me" href="#account" id="me-link"><span class="avatar" id="me-av"></span><span class="name" id="me-name"></span></a>
+      <button class="iconbtn" id="logout" type="button" data-i18n-aria="top.logout" title=""><svg class="i" viewBox="0 0 24 24"><path d="M15 4h3a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2h-3M10 17l5-5-5-5M15 12H4"/></svg></button>
+      <button class="iconbtn menu-toggle" id="menu-toggle" type="button" data-i18n-aria="nav.menu" aria-expanded="false"><svg class="i" viewBox="0 0 24 24"><path d="M4 8h16M4 16h16"/></svg></button>
+    </div>
+  </div>
+</header>
+<div class="menu-panel" id="menu-panel">
+  <nav id="mnav"></nav>
+  <div class="switches" id="mswitches"></div>
+  <button type="button" id="mlogout" data-i18n="top.logout">Ieșire</button>
+</div>
+
+<main class="main">
+  <!-- ================= dashboard ================= -->
+  <section id="t-home" hidden>
+    <div class="page-head"><div><h1 data-i18n="home.title"></h1><p data-i18n="home.sub"></p></div></div>
+    <div class="kpis" id="kpis"></div>
+    <div class="card">
+      <div class="card-head"><h2 data-i18n="map.title"></h2>
+        <div class="chips" id="map-filter">
+          <button class="chip" data-mf="all" aria-pressed="true" data-i18n="map.all"></button>
+          <button class="chip" data-mf="views" aria-pressed="false" data-i18n="map.views"></button>
+          <button class="chip" data-mf="logins" aria-pressed="false" data-i18n="map.logins"></button>
+          <button class="chip" data-mf="failed" aria-pressed="false" data-i18n="map.failed"></button>
+        </div>
+      </div>
+      <div class="banner warn" id="map-ready" hidden data-i18n="map.notReady"></div>
+      <div id="map"></div>
+      <div class="row" style="justify-content:space-between;margin-top:12px">
+        <div class="legend"><span><i style="background:var(--brand)"></i><span data-i18n="map.views"></span></span><span><i style="background:var(--ok)"></i><span data-i18n="map.logins"></span></span><span><i style="background:var(--danger)"></i><span data-i18n="map.failed"></span></span></div>
+        <div class="mapnote" id="map-note"></div>
+      </div>
+    </div>
+    <div class="cols">
+      <div class="card"><h2 data-i18n="places.title"></h2><div class="tablewrap"><table id="places"></table></div></div>
+      <div class="card"><div class="card-head"><h2 data-i18n="home.recent"></h2><a href="#log" id="home-log" data-min="admin" data-i18n="home.allLog"></a></div><div class="activity" id="activity"></div></div>
+    </div>
+    <div class="card"><h2 data-i18n="home.decks"></h2><div class="tablewrap"><table id="st-decks"></table></div></div>
+  </section>
 
   <!-- ================= presentations ================= -->
   <section id="t-decks" hidden>
-    <div id="editor-tools" hidden>
+    <div class="page-head">
+      <div><h1 data-i18n="decks.title"></h1><p data-i18n="decks.sub"></p></div>
+      <div class="actions" id="editor-tools" hidden><button class="primary lg" id="up-toggle" type="button"><svg class="i" viewBox="0 0 24 24"><path d="M12 16V4M7 9l5-5 5 5M4 20h16"/></svg><span data-i18n="decks.upload"></span></button></div>
+    </div>
+    <div class="card uploader" id="uploader" hidden>
       <div class="upform">
-        <label><span data-i18n="up.catalog">Catalog</span> <input type="text" id="up-catalog" list="up-catalogs" data-i18n-ph="up.catalogPh"></label>
-        <label><span data-i18n="up.lang">Limba</span>
-          <select id="up-lang"><option value="" data-i18n="up.langAuto">Detectează din numele fișierului</option><option>DE</option><option>FR</option><option>IT</option><option>EN</option><option>RO</option><option value="XX" data-i18n="lang.XX">Altă limbă</option></select></label>
+        <label><span data-i18n="up.catalog"></span><input type="text" id="up-catalog" list="up-catalogs" data-i18n-ph="up.catalogPh"></label>
+        <label><span data-i18n="up.lang"></span>
+          <select id="up-lang"><option value="" data-i18n="up.langAuto"></option><option>DE</option><option>FR</option><option>IT</option><option>EN</option><option>RO</option><option value="XX" data-i18n="lang.XX"></option></select></label>
         <datalist id="up-catalogs"></datalist>
       </div>
       <label id="drop">
         <input type="file" id="file" accept="application/pdf,.pdf" multiple hidden>
-        <b data-i18n="up.drop">Trage aici PDF-ul exportat din InDesign</b> <span data-i18n="up.dropOr">sau apasă pentru a alege fișierul.</span><br>
+        <span class="ic"><svg class="i" viewBox="0 0 24 24"><path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8z"/><path d="M14 3v5h5M12 18v-6M9 15l3-3 3 3"/></svg></span>
+        <b data-i18n="up.drop"></b><span data-i18n="up.dropOr"></span>
         <span class="small" data-i18n="up.dropHint"></span>
       </label>
       <div id="uploads"></div>
     </div>
+    <div class="toolbar" id="toolbar">
+      <div class="search"><svg class="i" viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg><input type="search" id="q" data-i18n-ph="decks.search"></div>
+      <div class="chips" id="langchips"></div>
+    </div>
     <div id="list"></div>
-  </section>
-
-  <!-- ================= statistics ================= -->
-  <section id="t-stats" hidden>
-    <div class="tiles" id="st-tiles"></div>
-    <div class="panel"><h2 data-i18n="st.decks">Prezentări</h2><div class="tablewrap"><table id="st-decks"></table></div></div>
-    <div class="panel"><h2 data-i18n="st.recent">Ultimele deschideri</h2><div class="tablewrap"><table id="st-recent"></table></div></div>
   </section>
 
   <!-- ================= users ================= -->
   <section id="t-users" hidden>
-    <div class="panel">
-      <h2 data-i18n="us.add">Adaugă utilizator</h2>
-      <form id="nu" class="grid2" autocomplete="off" novalidate>
-        <label class="field"><span data-i18n="us.username"></span><input id="nu-username" data-i18n-ph="us.usernamePh" autocapitalize="none" spellcheck="false" autocomplete="off"></label>
-        <label class="field"><span data-i18n="us.name"></span><input id="nu-name" data-i18n-ph="us.namePh"></label>
-        <label class="field"><span data-i18n="us.email"></span><input id="nu-email" type="email"></label>
-        <label class="field"><span data-i18n="us.role"></span>
-          <select id="nu-role">
-            <option value="viewer" data-i18n="role.viewer.long"></option>
-            <option value="editor" data-i18n="role.editor.long"></option>
-            <option value="admin" data-i18n="role.admin.long"></option>
-          </select>
-        </label>
-        <label class="field"><span data-i18n="us.password"></span>
-          <span class="row"><input id="nu-password" type="text" style="flex:1" autocomplete="new-password"><button type="button" id="nu-gen" data-i18n="us.generate"></button></span>
-          <ul class="pwrules" id="nu-rules"></ul>
-        </label>
-        <div class="field"><span data-i18n="us.access"></span>
-          <select id="nu-access"><option value="all" data-i18n="us.accessAll"></option><option value="groups" data-i18n="us.accessGroups"></option></select>
-          <div class="groupchecks" id="nu-groups" hidden></div>
-        </div>
-        <div class="field">
-          <label class="check"><input type="checkbox" id="nu-must" checked> <span data-i18n="us.must"></span></label>
-          <div class="row" style="margin-top:6px"><button class="primary" id="nu-go" data-i18n="us.create"></button></div>
-        </div>
-      </form>
-      <div class="err" id="nu-err"></div>
+    <div class="page-head">
+      <div><h1 data-i18n="users.title"></h1><p data-i18n="users.sub"></p></div>
+      <div class="actions"><button class="primary lg" type="button" id="nu-open"><svg class="i" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg><span data-i18n="users.add"></span></button></div>
     </div>
-    <div class="panel"><h2 data-i18n="us.list">Utilizatori</h2><div class="tablewrap"><table id="users"></table></div></div>
-    <div class="panel">
-      <h2 data-i18n="gr.title">Grupuri de acces</h2>
-      <p class="hint" style="margin:-6px 0 12px" data-i18n="gr.hint"></p>
+    <div class="card"><h2 data-i18n="us.list"></h2><div class="tablewrap"><table id="users"></table></div></div>
+    <div class="card">
+      <h2 data-i18n="gr.title"></h2>
+      <p class="hint" data-i18n="gr.hint"></p>
       <div class="tablewrap"><table id="groups"></table></div>
-      <form id="ng" class="grid2" style="margin-top:14px">
+      <form id="ng">
         <label class="field"><span data-i18n="gr.newName"></span><input id="ng-name" data-i18n-ph="gr.newNamePh" maxlength="60" required></label>
-        <div class="field"><span data-i18n="gr.catalogs"></span><div class="groupchecks" id="ng-catalogs"></div></div>
-        <div class="field"><span data-i18n="gr.langs"></span><div class="groupchecks" id="ng-langs"></div></div>
+        <div class="field"><span class="small muted" data-i18n="gr.catalogs"></span><div class="groupchecks" id="ng-catalogs"></div></div>
+        <div class="field"><span class="small muted" data-i18n="gr.langs"></span><div class="groupchecks" id="ng-langs"></div></div>
         <div class="field"><button class="primary" id="ng-go" data-i18n="gr.create"></button></div>
       </form>
       <div class="err" id="ng-err"></div>
     </div>
-    <div class="panel"><h2 data-i18n="us.sessions">Sesiuni active</h2><p class="hint" style="margin:-6px 0 10px" data-i18n="us.sessionsHint"></p><div class="tablewrap"><table id="sessions"></table></div></div>
+    <div class="card"><h2 data-i18n="us.sessions"></h2><p class="hint" data-i18n="us.sessionsHint"></p><div class="tablewrap"><table id="sessions"></table></div></div>
   </section>
 
   <!-- ================= log ================= -->
   <section id="t-log" hidden>
-    <div class="panel">
-      <div class="row">
-        <select id="lg-type">
-          <option value="" data-i18n="lg.all"></option>
-          <option value="auth." data-i18n="lg.auth"></option>
-          <option value="auth.login_failed" data-i18n="lg.failed"></option>
-          <option value="user." data-i18n="lg.users"></option>
-          <option value="deck." data-i18n="lg.decks"></option>
-          <option value="deck.view" data-i18n="lg.views"></option>
-          <option value="settings." data-i18n="lg.settings"></option>
-          <option value="backup." data-i18n="lg.backup"></option>
-        </select>
-        <input id="lg-user" data-i18n-ph="lg.userPh" style="width:150px" autocapitalize="none">
-        <input id="lg-q" data-i18n-ph="lg.searchPh" style="flex:1;min-width:180px">
-        <button id="lg-go" class="primary" type="button" data-i18n="lg.filter"></button>
-        <button id="lg-csv" type="button" data-i18n="lg.csv"></button>
-      </div>
+    <div class="page-head">
+      <div><h1 data-i18n="log.title"></h1><p data-i18n="log.sub"></p></div>
+      <div class="actions"><button id="lg-csv" type="button"><svg class="i" viewBox="0 0 24 24"><path d="M12 4v12M7 11l5 5 5-5M4 20h16"/></svg><span data-i18n="lg.csv"></span></button></div>
     </div>
-    <div class="panel"><div class="tablewrap"><table id="log"></table></div>
-      <div class="row" style="margin-top:12px;justify-content:center"><button id="lg-more" type="button" data-i18n="lg.more"></button></div></div>
+    <div class="toolbar">
+      <select id="lg-type">
+        <option value="" data-i18n="lg.all"></option>
+        <option value="auth." data-i18n="lg.auth"></option>
+        <option value="auth.login_failed" data-i18n="lg.failed"></option>
+        <option value="user." data-i18n="lg.users"></option>
+        <option value="deck." data-i18n="lg.decks"></option>
+        <option value="deck.view" data-i18n="lg.views"></option>
+        <option value="settings." data-i18n="lg.settings"></option>
+        <option value="backup." data-i18n="lg.backup"></option>
+      </select>
+      <input id="lg-user" data-i18n-ph="lg.userPh" style="width:170px" autocapitalize="none">
+      <div class="search"><svg class="i" viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg><input type="search" id="lg-q" data-i18n-ph="lg.searchPh"></div>
+      <button id="lg-go" class="primary" type="button" data-i18n="lg.filter"></button>
+    </div>
+    <div class="card"><div class="tablewrap"><table id="log"></table></div>
+      <div class="row" style="margin-top:14px;justify-content:center"><button id="lg-more" type="button" data-i18n="lg.more"></button></div></div>
   </section>
 
   <!-- ================= settings ================= -->
   <section id="t-settings" hidden>
+    <div class="page-head"><div><h1 data-i18n="settings.title"></h1><p data-i18n="settings.sub"></p></div></div>
     <form id="sf">
-      <div class="panel">
+      <div class="card">
         <h2 data-i18n="se.general"></h2>
         <div class="grid2">
           <label class="field"><span data-i18n="se.siteName"></span><input id="s-siteName" maxlength="60"></label>
@@ -135,9 +154,9 @@
           </label>
         </div>
         <p class="hint" data-i18n="se.accessHint"></p>
-        <label class="check" style="margin-top:10px"><input type="checkbox" id="s-logViews"> <span data-i18n="se.logViews"></span></label>
+        <label class="check" style="margin-top:14px"><input type="checkbox" id="s-logViews"> <span data-i18n="se.logViews"></span></label>
       </div>
-      <div class="panel">
+      <div class="card">
         <h2 data-i18n="se.security"></h2>
         <div class="grid2">
           <label class="field"><span data-i18n="se.sessionDays"></span><input id="s-sessionDays" type="number" min="1" max="365"></label>
@@ -146,44 +165,42 @@
         </div>
         <p class="hint" data-i18n="se.securityHint"></p>
       </div>
-      <div class="panel">
+      <div class="card">
         <h2 data-i18n="se.defaults"></h2>
         <div class="settings" id="s-presenter"></div>
       </div>
-      <div class="panel">
+      <div class="card">
         <h2 data-i18n="se.notify"></h2>
         <div id="n-status" class="banner"></div>
         <div class="grid2">
           <label class="field"><span data-i18n="se.recipients"></span><textarea id="n-recipients" rows="3" spellcheck="false"></textarea></label>
-          <div class="field"><span data-i18n="se.sendWhen"></span><div id="n-events" style="display:grid;gap:6px;margin-top:4px"></div></div>
+          <div class="field"><span data-i18n="se.sendWhen"></span><div id="n-events" style="display:grid;gap:8px;margin-top:4px"></div></div>
         </div>
-        <div class="row" style="margin-top:12px"><button type="button" id="n-test" data-i18n="se.test"></button><span class="hint" id="n-test-msg"></span></div>
+        <div class="row" style="margin-top:16px"><button type="button" id="n-test" data-i18n="se.test"></button><span class="hint" id="n-test-msg" style="margin:0"></span></div>
       </div>
-      <div class="row"><button class="primary" id="s-save" data-i18n="se.save"></button><span class="err" id="s-err"></span></div>
+      <div class="row"><button class="primary lg" id="s-save" data-i18n="se.save"></button><span class="err" id="s-err"></span></div>
     </form>
   </section>
 
   <!-- ================= backup ================= -->
   <section id="t-backup" hidden>
-    <div class="panel">
+    <div class="page-head">
+      <div><h1 data-i18n="backup.title"></h1><p data-i18n="backup.sub"></p></div>
+      <div class="actions"><span class="muted small" id="b-total"></span><button class="primary lg" id="b-now" type="button" data-i18n="bk.now"></button></div>
+    </div>
+    <div class="card">
       <h2 data-i18n="bk.auto"></h2>
-      <p class="hint" style="margin:-6px 0 12px" data-i18n="bk.hint"></p>
+      <p class="hint" data-i18n="bk.hint"></p>
       <div class="row">
         <label class="check"><input type="checkbox" id="b-auto"> <span data-i18n="bk.daily"></span></label>
-        <label class="row" style="gap:6px"><span data-i18n="bk.keep1"></span> <input id="b-keep" type="number" min="1" max="60" style="width:70px"> <span data-i18n="bk.keep2"></span></label>
+        <label class="row" style="gap:8px;color:var(--ink);font-size:16px"><span data-i18n="bk.keep1"></span> <input id="b-keep" type="number" min="1" max="60" style="width:80px"> <span data-i18n="bk.keep2"></span></label>
         <button id="b-save" type="button" data-i18n="common.save"></button>
       </div>
     </div>
-    <div class="panel">
-      <div class="row" style="justify-content:space-between;margin-bottom:10px">
-        <h2 style="margin:0" data-i18n="bk.list"></h2>
-        <div class="row"><span class="hint" id="b-total"></span><button class="primary" id="b-now" type="button" data-i18n="bk.now"></button></div>
-      </div>
-      <div class="tablewrap"><table id="b-list"></table></div>
-    </div>
-    <div class="panel">
+    <div class="card"><h2 data-i18n="bk.list"></h2><div class="tablewrap"><table id="b-list"></table></div></div>
+    <div class="card">
       <h2 data-i18n="bk.fromFile"></h2>
-      <p class="hint" style="margin:-6px 0 12px" data-i18n="bk.fromFileHint"></p>
+      <p class="hint" data-i18n="bk.fromFileHint"></p>
       <div class="row"><input type="file" id="r-file" accept=".zip,application/zip"><button id="r-go" class="danger" type="button" disabled data-i18n="bk.fromFileGo"></button></div>
       <div class="err" id="r-err"></div>
     </div>
@@ -191,41 +208,78 @@
 
   <!-- ================= my account ================= -->
   <section id="t-account" hidden>
+    <div class="page-head"><div><h1 data-i18n="account.title"></h1><p data-i18n="account.sub"></p></div></div>
     <div class="banner warn" id="must-banner" hidden data-i18n="acc.must"></div>
-    <div class="panel"><h2 data-i18n="acc.title"></h2><div class="grid2" id="acc-info"></div></div>
-    <div class="panel">
+    <div class="card"><div class="grid2" id="acc-info"></div></div>
+    <div class="card">
       <h2 data-i18n="acc.change"></h2>
       <form id="pw" class="grid2" autocomplete="on" novalidate>
         <input type="text" autocomplete="username" id="pw-user" hidden>
-        <label class="field"><span data-i18n="acc.current"></span><span class="pwwrap"><input id="pw-cur" type="password" autocomplete="current-password" required><button type="button" class="eye" data-eye-for="pw-cur" aria-pressed="false"></button></span></label>
+        <label class="field" id="pw-cur-field"><span data-i18n="acc.current"></span><span class="pwwrap"><input id="pw-cur" type="password" autocomplete="current-password" required><button type="button" class="eye" data-eye-for="pw-cur" aria-pressed="false"></button></span></label>
         <label class="field"><span class="row" style="justify-content:space-between"><span data-i18n="acc.new"></span><button type="button" class="ghost small" id="pw-gen" data-i18n="pw.generate"></button></span><span class="pwwrap"><input id="pw-new" type="password" autocomplete="new-password"><button type="button" class="eye" data-eye-for="pw-new" aria-pressed="false"></button></span></label>
         <label class="field"><span data-i18n="acc.new2"></span><span class="pwwrap"><input id="pw-new2" type="password" autocomplete="new-password"><button type="button" class="eye" data-eye-for="pw-new2" aria-pressed="false"></button></span></label>
         <div class="field" style="align-self:end"><button class="primary" id="pw-go" data-i18n="acc.change"></button></div>
       </form>
-      <div class="banner ok" id="pw-gen-note" hidden data-i18n="pw.generated"></div>
+      <div class="banner ok" id="pw-gen-note" hidden data-i18n="pw.generated" style="margin-top:16px"></div>
       <ul class="pwrules" id="pw-rules"></ul>
       <p class="hint" data-i18n="acc.hint"></p>
       <div class="err" id="pw-err"></div>
     </div>
   </section>
-</div>
+</main>
 
-<dialog id="qr" class="qr">
-  <div id="qr-title" style="font-weight:650"></div>
-  <img id="qr-img" alt="QR">
-  <div class="small muted" style="margin-bottom:14px" data-i18n="qr.hint"></div>
-  <form method="dialog"><button data-i18n="common.close"></button></form>
+<!-- ================= dialogs ================= -->
+<dialog id="qr" class="qr narrow">
+  <div class="dlg-head"><h2 id="qr-title"></h2><button class="x iconbtn" data-close type="button" data-i18n-aria="common.close"><svg class="i" viewBox="0 0 24 24"><path d="M6 6l12 12M18 6 6 18"/></svg></button></div>
+  <div class="dlg-body"><img id="qr-img" alt="QR"><div class="muted small" data-i18n="qr.hint"></div></div>
 </dialog>
-<dialog id="report" class="report"><div id="report-body"></div><div class="rfoot"><button id="report-close" type="button" data-i18n="common.close"></button></div></dialog>
-<dialog id="access" class="report">
-  <h2 style="margin:0 0 4px" data-i18n="ac.title"></h2>
-  <p class="muted" id="ac-user" style="margin:0 0 12px"></p>
-  <label class="check"><input type="radio" name="ac" value="all"> <span data-i18n="ac.all"></span></label>
-  <label class="check" style="margin-top:6px"><input type="radio" name="ac" value="groups"> <span data-i18n="ac.groups"></span></label>
-  <div class="groupchecks" id="ac-groups" style="margin:8px 0 0 24px"></div>
-  <div class="rfoot"><button type="button" id="ac-cancel" data-i18n="common.cancel"></button> <button type="button" class="primary" id="ac-save" data-i18n="common.save"></button></div>
+<dialog id="report">
+  <div class="dlg-head"><span></span><button class="x iconbtn" id="report-close" type="button" data-i18n-aria="common.close"><svg class="i" viewBox="0 0 24 24"><path d="M6 6l12 12M18 6 6 18"/></svg></button></div>
+  <div class="dlg-body" id="report-body"></div>
 </dialog>
-<div class="toast" id="toast"></div>
+<dialog id="deckdlg">
+  <div class="dlg-head"><h2 data-i18n="deck.dlgTitle"></h2><button class="x iconbtn" data-close type="button" data-i18n-aria="common.close"><svg class="i" viewBox="0 0 24 24"><path d="M6 6l12 12M18 6 6 18"/></svg></button></div>
+  <div class="dlg-body" id="deckdlg-body"></div>
+</dialog>
+<dialog id="nudlg" class="narrow">
+  <div class="dlg-head"><h2 data-i18n="us.add"></h2><button class="x iconbtn" data-close type="button" data-i18n-aria="common.close"><svg class="i" viewBox="0 0 24 24"><path d="M6 6l12 12M18 6 6 18"/></svg></button></div>
+  <form id="nu" autocomplete="off" novalidate>
+    <div class="dlg-body" style="display:grid;gap:16px">
+      <label class="field"><span data-i18n="us.username"></span><input id="nu-username" data-i18n-ph="us.usernamePh" autocapitalize="none" spellcheck="false" autocomplete="off"></label>
+      <label class="field"><span data-i18n="us.name"></span><input id="nu-name" data-i18n-ph="us.namePh"></label>
+      <label class="field"><span data-i18n="us.email"></span><input id="nu-email" type="email"></label>
+      <label class="field"><span data-i18n="us.role"></span>
+        <select id="nu-role">
+          <option value="viewer" data-i18n="role.viewer.long"></option>
+          <option value="editor" data-i18n="role.editor.long"></option>
+          <option value="admin" data-i18n="role.admin.long"></option>
+        </select>
+      </label>
+      <div class="field"><span class="small muted" data-i18n="us.password"></span>
+        <span class="row" style="flex-wrap:nowrap"><input id="nu-password" type="text" style="flex:1" autocomplete="new-password"><button type="button" id="nu-gen" data-i18n="us.generate"></button></span>
+        <ul class="pwrules" id="nu-rules"></ul>
+      </div>
+      <div class="field"><span class="small muted" data-i18n="us.access"></span>
+        <select id="nu-access"><option value="all" data-i18n="us.accessAll"></option><option value="groups" data-i18n="us.accessGroups"></option></select>
+        <div class="groupchecks" id="nu-groups" hidden></div>
+      </div>
+      <label class="check"><input type="checkbox" id="nu-must" checked> <span data-i18n="us.must"></span></label>
+      <div class="err" id="nu-err"></div>
+    </div>
+    <div class="dlg-foot"><button type="button" data-close data-i18n="common.cancel"></button><button class="primary" id="nu-go" data-i18n="us.create"></button></div>
+  </form>
+</dialog>
+<dialog id="access" class="narrow">
+  <div class="dlg-head"><h2 data-i18n="ac.title"></h2><button class="x iconbtn" data-close type="button" data-i18n-aria="common.close"><svg class="i" viewBox="0 0 24 24"><path d="M6 6l12 12M18 6 6 18"/></svg></button></div>
+  <div class="dlg-body">
+    <p class="muted" id="ac-user" style="margin:0 0 16px"></p>
+    <label class="check"><input type="radio" name="ac" value="all"> <span data-i18n="ac.all"></span></label>
+    <label class="check" style="margin-top:10px"><input type="radio" name="ac" value="groups"> <span data-i18n="ac.groups"></span></label>
+    <div class="groupchecks" id="ac-groups" style="margin:12px 0 0 28px"></div>
+  </div>
+  <div class="dlg-foot"><button type="button" data-close data-i18n="common.cancel"></button><button type="button" class="primary" id="ac-save" data-i18n="common.save"></button></div>
+</dialog>
+<div class="toast" id="toast" role="status"></div>
 <script type="module" src="/admin.js"></script>
 </body>
 </html>

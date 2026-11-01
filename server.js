@@ -13,6 +13,7 @@ import { Audit, EVENT_LABELS } from './lib/audit.js';
 import { Backups } from './lib/backup.js';
 import { Notifier, NOTIFY_EVENTS } from './lib/notify.js';
 import { translateResponses, toEnglish, langOf } from './lib/i18n-server.js';
+import { Geo } from './lib/geo.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const PORT = Number(process.env.PORT || 3000);
@@ -58,7 +59,8 @@ if (!config.data.siteName || config.data.siteName === 'PDF Deck') { config.data.
 const settings = () => config.data;
 
 const auth = new Auth(DATA_DIR, settings);
-const audit = new Audit(DATA_DIR);
+const geo = new Geo(DATA_DIR);
+const audit = new Audit(DATA_DIR, (ip) => geo.lookup(ip));
 const backups = new Backups(DATA_DIR);
 let lastBaseUrl = PUBLIC_URL;
 const notifier = new Notifier(settings, () => PUBLIC_URL || lastBaseUrl);
@@ -134,6 +136,7 @@ app.use((req, _res, next) => {
   const s = auth.sessionFor(token);
   req.token = token;
   req.user = s?.user || null;
+  req.session = s?.session || null;
   next();
 });
 // Requests that change something must come from our own pages (blocks cross-site form posts).
@@ -193,6 +196,8 @@ async function ingest(file, deck) {
 // ================= account =================
 app.get('/api/me', (req, res) => res.json({
   user: req.user ? auth.publicUser(req.user) : null,
+  // the forced first change does not ask for the current password while the sign-in is fresh
+  currentPasswordNeeded: !(req.user?.mustChangePassword && req.session && Date.now() - Date.parse(req.session.createdAt) < 30 * 60e3),
   siteName: settings().siteName,
   needsSetup: !auth.activeAdmins().length,
 }));
@@ -200,7 +205,7 @@ app.get('/api/me', (req, res) => res.json({
 const failureTimes = [];
 app.post('/api/login', express.json(), async (req, res) => {
   const { username, password } = req.body || {};
-  const r = await auth.login(username, password, { ip: ipOf(req), ua: req.get('user-agent') });
+  const r = await auth.login(username, password, { ip: ipOf(req), ua: req.get('user-agent'), geo: geo.lookup(ipOf(req)) });
   if (!r.ok) {
     if (r.locked && !r.reason) {
       return res.status(429).json({ error: `Prea multe încercări greșite. Încearcă din nou după ${new Date(r.locked).toLocaleTimeString(langOf(req) === 'en' ? 'en-GB' : 'ro-RO', { hour: '2-digit', minute: '2-digit', timeZone: 'Europe/Bucharest' })}.` });
@@ -209,7 +214,8 @@ app.post('/api/login', express.json(), async (req, res) => {
     audit.log('auth.login_failed', { ip: ipOf(req), target: who, detail: r.reason === 'disabled' ? 'cont dezactivat' : 'utilizator sau parolă greșită', ok: false });
     if (r.locked) {
       audit.log('auth.locked', { ip: ipOf(req), target: who, ok: false });
-      notifier.event('locked', `Cont blocat: ${who}`, [`Contul „${who}” a fost blocat temporar după prea multe parole greșite.`, `Adresa IP: ${ipOf(req)}`, `Dacă nu a fost chiar utilizatorul, verifică Jurnalul.`], { throttleKey: who });
+      const place = geo.label(geo.lookup(ipOf(req)));
+      notifier.event('locked', `Cont blocat: ${who}`, [`Contul „${who}” a fost blocat temporar după prea multe parole greșite.`, `Adresa IP: ${ipOf(req)}${place ? ` (${place}, aproximativ)` : ''}`, `Dacă nu a fost chiar utilizatorul, verifică Jurnalul.`], { throttleKey: who });
     }
     failureTimes.push(Date.now());
     while (failureTimes.length && failureTimes[0] < Date.now() - 3600e3) failureTimes.shift();
@@ -233,7 +239,11 @@ app.post('/api/logout', async (req, res) => {
 app.post('/api/me/password', express.json(), async (req, res) => {
   if (!req.user) return res.status(401).json({ error: 'auth' });
   try {
-    await auth.changeOwnPassword(req.user.id, req.body?.current, req.body?.next, req.token);
+    // first, forced change within 30 minutes of signing in: no need to type the current password again
+    const fresh = req.session && Date.now() - Date.parse(req.session.createdAt) < 30 * 60e3;
+    const skipCurrent = !!(req.user.mustChangePassword && fresh);
+    if (!skipCurrent && !req.body?.current) return res.status(400).json({ error: 'Scrie parola actuală.', code: 'current_required' });
+    await auth.changeOwnPassword(req.user.id, req.body?.current, req.body?.next, req.token, { skipCurrent });
     audit.log('auth.password_changed', meta(req));
     res.json({ ok: true, user: auth.publicUser(req.user) });
   } catch (e) { res.status(400).json({ error: e.message }); }
@@ -289,10 +299,29 @@ app.get('/api/stats', need('editor'), async (_req, res) => {
   const failed = await audit.query({ type: 'auth.login_failed', since, limit: 5000 });
   const perDeck = {};
   for (const v of views) perDeck[v.target] = (perDeck[v.target] || 0) + 1;
+  // places: one row per country + city, with counts by kind (for the map and the table)
+  const places = new Map();
+  let local = 0, unknown = 0;
+  const add = (e, kind) => {
+    if (!e.geo) { unknown++; return; }
+    if (e.geo.local) { local++; return; }
+    const key = `${e.geo.cc}|${e.geo.city || ''}`;
+    let p = places.get(key);
+    if (!p) { p = { cc: e.geo.cc, country: e.geo.country, city: e.geo.city, region: e.geo.region, lat: e.geo.lat, lon: e.geo.lon, views: 0, logins: 0, failed: 0, users: new Set(), decks: new Set(), last: e.at }; places.set(key, p); }
+    p[kind]++;
+    if (e.at > p.last) p.last = e.at;
+    const who = e.user?.username || (kind === 'failed' ? e.target : null);
+    if (who) p.users.add(kind === 'failed' ? `${who} ✖` : who);
+    if (kind === 'views') p.decks.add(e.target);
+  };
+  views.forEach((e) => add(e, 'views')); logins.forEach((e) => add(e, 'logins')); failed.forEach((e) => add(e, 'failed'));
   res.json({
     views30: views.length, logins30: logins.length, failed30: failed.length,
     users: auth.list().length, activeSessions: auth.listSessions().length,
     perDeck, recentViews: views.slice(0, 15),
+    places: [...places.values()].map((p) => ({ ...p, users: [...p.users].slice(0, 20), decks: [...p.decks].slice(0, 10) }))
+      .sort((a, b) => (b.views + b.logins + b.failed) - (a.views + a.logins + a.failed)),
+    placesLocal: local, placesUnknown: unknown, geo: geo.status(),
   });
 });
 
@@ -613,6 +642,7 @@ const guardByDeck = (pick) => (req, res, next) => {
 app.use('/files', guardByDeck((d, f) => d.file === f), express.static(DIRS.files, { immutable: true, maxAge: '365d' }));
 app.use('/thumbs', guardByDeck((d, f) => f === `${d.id}.png`), express.static(DIRS.thumbs, { maxAge: '7d' }));
 // "legacy" build of PDF.js so older iPads (iPadOS 15-16) work too
+app.use('/vendor/leaflet', express.static(path.join(__dirname, 'node_modules', 'leaflet', 'dist'), { maxAge: '30d' }));
 const PDFJS = path.join(__dirname, 'node_modules', 'pdfjs-dist');
 for (const sub of ['cmaps', 'standard_fonts', 'wasm', 'iccs']) app.use(`/vendor/pdfjs/${sub}`, express.static(path.join(PDFJS, sub), { maxAge: '30d' }));
 app.use('/vendor/pdfjs', express.static(path.join(PDFJS, 'legacy', 'build'), { maxAge: '30d' }));
@@ -650,6 +680,7 @@ if (process.env.ADMIN_RESET_PASSWORD) {
   }
 }
 audit.log('system.start');
+geo.start().catch((e) => console.warn('geo:', e.message));
 setTimeout(runAutoBackup, 60e3);            // shortly after start…
 setInterval(runAutoBackup, 3600e3).unref(); // …then checked every hour, made once a day
 
