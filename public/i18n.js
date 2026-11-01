@@ -96,8 +96,7 @@ const RO = {
   'us.err.short': 'Numele de utilizator trebuie să aibă cel puțin 3 caractere.',
   'us.err.chars': 'Numele de utilizator poate conține doar litere fără diacritice, cifre, punct, minus sau underscore (de ex. Alex1 sau Ana.Pop).',
   'us.err.noPw': 'Scrie o parolă inițială sau apasă „Generează”.',
-  'us.err.pwLen': 'Parola are {n} caractere; trebuie să aibă cel puțin 10. Apasă „Generează” pentru una sigură.',
-  'us.err.pwMix': 'Parola trebuie să conțină și litere, și cifre. Apasă „Generează” pentru una sigură.',
+  'us.err.pwRules': 'Parola inițială nu respectă regulile de sub câmp. Apasă „Generează” pentru una sigură.',
 
   // groups
   'gr.title': 'Grupuri de acces',
@@ -151,10 +150,15 @@ const RO = {
   'bk.doneTitle': 'Backup restaurat', 'bk.doneText': 'Serverul repornește cu datele din backup. Te trimit la pagina de autentificare în câteva secunde…',
 
   // account
-  'acc.must': 'Pentru siguranță, alege o parolă nouă înainte de a continua.', 'acc.title': 'Contul meu',
+  'acc.must': 'Pentru siguranță, alege o parolă nouă înainte de a continua. Regulile sunt afișate sub câmpul „Parola nouă” și se bifează pe măsură ce scrii.', 'acc.title': 'Contul meu',
   'acc.user': 'Utilizator', 'acc.name': 'Nume', 'acc.role': 'Rol', 'acc.lastLogin': 'Ultima logare',
   'acc.change': 'Schimbă parola', 'acc.current': 'Parola actuală', 'acc.new': 'Parola nouă', 'acc.new2': 'Repetă parola nouă',
-  'acc.hint': 'Minimum 10 caractere, cu litere și cifre. După schimbare, celelalte dispozitive conectate sunt deconectate.',
+  'acc.hint': 'După schimbare, celelalte dispozitive conectate sunt deconectate.',
+  'pw.title': 'Parola trebuie să aibă:', 'pw.len': 'cel puțin 8 caractere', 'pw.lower': 'o literă mică (a–z)',
+  'pw.upper': 'o literă mare (A–Z)', 'pw.special': 'un caracter special, de ex. @ # ! $ % & *', 'pw.match': 'aceeași parolă scrisă de două ori',
+  'pw.notMet': 'Parola nu respectă încă toate regulile de mai jos.',
+  'pw.show': 'Arată parola', 'pw.hide': 'Ascunde parola', 'pw.generate': 'Generează o parolă',
+  'pw.generated': 'Am generat o parolă sigură și am completat-o în ambele câmpuri. Notează-o înainte să apeși „Schimbă parola”.',
   'acc.mismatch': 'Parolele noi nu coincid.', 'acc.changed': 'Parola a fost schimbată',
 
   // presenter
@@ -254,8 +258,7 @@ const EN = {
   'us.err.short': 'The username needs at least 3 characters.',
   'us.err.chars': 'The username can only contain letters without accents, digits, dot, minus or underscore (e.g. Alex1 or Ana.Pop).',
   'us.err.noPw': 'Enter an initial password or click “Generate”.',
-  'us.err.pwLen': 'The password has {n} characters; it needs at least 10. Click “Generate” for a strong one.',
-  'us.err.pwMix': 'The password needs both letters and digits. Click “Generate” for a strong one.',
+  'us.err.pwRules': 'The initial password does not meet the rules under the field. Click “Generate” for a strong one.',
 
   'gr.title': 'Access groups',
   'gr.hint': 'A group gives access to some catalogues and languages, e.g. “Romandia” → French. Presenters set to “Only those of the chosen groups” see only their groups’ presentations. Editors and administrators see everything.',
@@ -304,10 +307,15 @@ const EN = {
   'bk.uploading': 'Uploading… {p}%', 'bk.failed': 'The restore failed.', 'bk.cut': 'The connection was lost.',
   'bk.doneTitle': 'Backup restored', 'bk.doneText': 'The server is restarting with the backup data. You will be taken to the sign-in page in a few seconds…',
 
-  'acc.must': 'For safety, choose a new password before you continue.', 'acc.title': 'My account',
+  'acc.must': 'For safety, choose a new password before you continue. The rules are shown under “New password” and get ticked as you type.', 'acc.title': 'My account',
   'acc.user': 'Username', 'acc.name': 'Name', 'acc.role': 'Role', 'acc.lastLogin': 'Last sign-in',
   'acc.change': 'Change password', 'acc.current': 'Current password', 'acc.new': 'New password', 'acc.new2': 'Repeat new password',
-  'acc.hint': 'At least 10 characters, with letters and digits. Other signed-in devices are signed out after the change.',
+  'acc.hint': 'Other signed-in devices are signed out after the change.',
+  'pw.title': 'The password needs:', 'pw.len': 'at least 8 characters', 'pw.lower': 'a lowercase letter (a–z)',
+  'pw.upper': 'a capital letter (A–Z)', 'pw.special': 'a special character, e.g. @ # ! $ % & *', 'pw.match': 'the same password typed twice',
+  'pw.notMet': 'The password does not meet all the rules below yet.',
+  'pw.show': 'Show password', 'pw.hide': 'Hide password', 'pw.generate': 'Generate a password',
+  'pw.generated': 'A strong password was generated and filled into both fields. Write it down before you click “Change password”.',
   'acc.mismatch': 'The new passwords do not match.', 'acc.changed': 'Password changed',
 
   'pv.loading': 'Loading the presentation…', 'pv.preparing': 'Getting ready…', 'pv.loadFailed': 'The presentation could not be loaded.',
@@ -425,6 +433,31 @@ export function setLang(l) {
   document.documentElement.lang = l;
   applyI18n();
   window.dispatchEvent(new CustomEvent('langchange', { detail: l }));
+}
+
+// ------------------------------------------------------------------ show / hide password (eye button)
+const EYE_OPEN = '<svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><path fill="none" stroke="currentColor" stroke-width="2" d="M2 12s3.6-7 10-7 10 7 10 7-3.6 7-10 7S2 12 2 12z"/><circle cx="12" cy="12" r="3" fill="none" stroke="currentColor" stroke-width="2"/></svg>';
+const EYE_SHUT = '<svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><path fill="none" stroke="currentColor" stroke-width="2" d="M2 12s3.6-7 10-7 10 7 10 7-3.6 7-10 7S2 12 2 12z"/><circle cx="12" cy="12" r="3" fill="none" stroke="currentColor" stroke-width="2"/><path stroke="currentColor" stroke-width="2" d="M3 3l18 18"/></svg>';
+export function setPasswordVisible(input, visible) {
+  input.type = visible ? 'text' : 'password';
+  const b = document.querySelector(`.eye[data-eye-for="${input.id}"]`);
+  if (!b) return;
+  b.setAttribute('aria-pressed', String(visible));
+  b.innerHTML = visible ? EYE_SHUT : EYE_OPEN;
+  b.title = t(visible ? 'pw.hide' : 'pw.show');
+  b.setAttribute('aria-label', b.title);
+}
+export function wireEyes(root = document) {
+  root.querySelectorAll('.eye[data-eye-for]').forEach((b) => {
+    const input = document.getElementById(b.dataset.eyeFor);
+    if (!input || b.dataset.wired) return;
+    b.dataset.wired = '1';
+    setPasswordVisible(input, input.type === 'text');
+    b.addEventListener('click', () => { setPasswordVisible(input, input.type === 'password'); input.focus(); });
+  });
+  window.addEventListener('langchange', () => root.querySelectorAll('.eye[data-eye-for]').forEach((b) => {
+    const input = document.getElementById(b.dataset.eyeFor); if (input) setPasswordVisible(input, input.type === 'text');
+  }));
 }
 
 // ------------------------------------------------------------------ theme

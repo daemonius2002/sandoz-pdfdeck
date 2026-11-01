@@ -17,15 +17,16 @@
     <h1 data-i18n="login.title">Autentificare</h1>
     <form id="f" autocomplete="on">
       <label><span data-i18n="login.user">Utilizator</span><input id="u" name="username" autocomplete="username" autocapitalize="none" spellcheck="false" required></label>
-      <label><span data-i18n="login.password">Parolă</span><input id="p" name="password" type="password" autocomplete="current-password" required></label>
+      <label><span data-i18n="login.password">Parolă</span><span class="pwwrap"><input id="p" name="password" type="password" autocomplete="current-password" required><button type="button" class="eye" data-eye-for="p" aria-pressed="false"></button></span></label>
       <div class="err" id="err" role="alert"></div>
       <button class="btn primary wide" id="go" data-i18n="login.go">Intră</button>
     </form>
     <p class="muted small" data-i18n="login.forgot">Ai uitat parola? Cere administratorului să ți-o reseteze.</p>
   </main>
 <script type="module">
-  import { t, applyI18n, mountSwitches } from '/i18n.js';
+  import { t, applyI18n, mountSwitches, wireEyes } from '/i18n.js';
   applyI18n();
+  wireEyes();
   mountSwitches(document.getElementById('switches'));
   const $ = (id) => document.getElementById(id);
   const next = (() => { const n = new URLSearchParams(location.search).get('next') || '/admin'; return /^\/(?!\/)/.test(n) ? n : '/admin'; })();

@@ -1,5 +1,5 @@
 import * as pdfjsLib from '/vendor/pdfjs/pdf.min.mjs';
-import { t, lang, locale, applyI18n, mountSwitches, eventLabel, issueText, itemText, detailText } from '/i18n.js';
+import { t, lang, locale, applyI18n, mountSwitches, eventLabel, issueText, itemText, detailText, wireEyes, setPasswordVisible } from '/i18n.js';
 pdfjsLib.GlobalWorkerOptions.workerSrc = '/vendor/pdfjs/pdf.worker.min.mjs';
 
 const $ = (id) => document.getElementById(id);
@@ -28,10 +28,30 @@ async function api(path, opts = {}) {
   return data;
 }
 
+// Password rule (same as the server): 8+ characters, lowercase, capital, special character
+const PW_RULES = [
+  ['pw.len', (p) => p.length >= 8], ['pw.lower', (p) => /[a-z]/.test(p)],
+  ['pw.upper', (p) => /[A-Z]/.test(p)], ['pw.special', (p) => /[^A-Za-z0-9]/.test(p)],
+];
+const pwOk = (p) => PW_RULES.every(([, test]) => test(p));
+// Live checklist under a password field; `extra` adds rules such as "typed twice the same".
+function pwChecklist(input, box, extra = []) {
+  const draw = () => {
+    const p = input.value;
+    const rules = [...PW_RULES.map(([k, test]) => [k, test(p)]), ...extra.map(([k, test]) => [k, test(p)])];
+    box.innerHTML = `<li class="ttl">${t('pw.title')}</li>` + rules.map(([k, ok]) => `<li class="${ok ? 'ok' : ''}"><span aria-hidden="true">${ok ? '✓' : '○'}</span> ${t(k)}</li>`).join('');
+  };
+  input.addEventListener('input', draw);
+  window.addEventListener('langchange', draw);
+  draw();
+  return draw;
+}
+
 function genPassword() {
-  const letters = 'abcdefghjkmnpqrstuvwxyzABCDEFGHJKLMNPQRSTUVWXYZ', digits = '23456789', all = letters + digits + '-_';
+  const lower = 'abcdefghjkmnpqrstuvwxyz', upper = 'ABCDEFGHJKLMNPQRSTUVWXYZ', digits = '23456789', special = '@#!$%&*';
+  const all = lower + upper + digits + special;
   const pick = (set) => set[crypto.getRandomValues(new Uint32Array(1))[0] % set.length];
-  const chars = [pick(letters), pick(digits)];
+  const chars = [pick(lower), pick(upper), pick(special), pick(digits)];
   while (chars.length < 14) chars.push(pick(all));
   for (let i = chars.length - 1; i > 0; i--) { const j = crypto.getRandomValues(new Uint32Array(1))[0] % (i + 1); [chars[i], chars[j]] = [chars[j], chars[i]]; }
   return chars.join('');
@@ -42,6 +62,7 @@ async function copy(text, okMsg) {
 
 // ================================================================== shell
 applyI18n();
+wireEyes();
 mountSwitches($('switches'));
 window.addEventListener('langchange', () => { renderHeader(); route(); });
 
@@ -340,7 +361,8 @@ function deviceName(ua = '') {
   return br ? `${dev} · ${br}` : dev;
 }
 
-$('nu-gen').addEventListener('click', () => { $('nu-password').value = genPassword(); });
+const drawNewUserRules = pwChecklist($('nu-password'), $('nu-rules'));
+$('nu-gen').addEventListener('click', () => { $('nu-password').value = genPassword(); $('nu-err').textContent = ''; drawNewUserRules(); });
 // usernames keep their capital letters; accents and spaces are converted as the admin types
 $('nu-username').addEventListener('input', (e) => {
   const v = e.target.value.normalize('NFD').replace(/[̀-ͯ]/g, '').replace(/\s+/g, '.');
@@ -351,8 +373,7 @@ function newUserProblem(username, pw) {
   if (username.length < 3) return t('us.err.short');
   if (!/^[A-Za-z0-9._-]+$/.test(username)) return t('us.err.chars');
   if (!pw) return t('us.err.noPw');
-  if (pw.length < 10) return t('us.err.pwLen', { n: pw.length });
-  if (!/[a-zA-Z]/.test(pw) || !/[0-9]/.test(pw)) return t('us.err.pwMix');
+  if (!pwOk(pw)) return t('us.err.pwRules');
   return null;
 }
 $('nu-access').addEventListener('change', () => { $('nu-groups').hidden = $('nu-access').value !== 'groups'; });
@@ -370,7 +391,7 @@ $('nu').addEventListener('submit', async (e) => {
       groups: [...$('nu-groups').querySelectorAll('input:checked')].map((x) => x.value),
     } });
     $('nu-groups').hidden = true;
-    $('nu').reset();
+    $('nu').reset(); drawNewUserRules();
     showSecret(t('us.created', { u: u.username }), t('us.createdText'), u.username, pw);
     loadUsers();
   } catch (err) { if (err.message !== 'auth') $('nu-err').textContent = err.message; }
@@ -611,6 +632,19 @@ function afterRestore() {
 }
 
 // ================================================================== my account
+const drawAccountRules = pwChecklist($('pw-new'), $('pw-rules'), [['pw.match', (p) => p.length > 0 && p === $('pw-new2').value]]);
+$('pw-new2').addEventListener('input', () => drawAccountRules());
+// an old error disappears as soon as the user edits the passwords again
+['pw-cur', 'pw-new', 'pw-new2'].forEach((id) => $(id).addEventListener('input', () => { $('pw-err').textContent = ''; }));
+['nu-username', 'nu-password'].forEach((id) => $(id).addEventListener('input', () => { $('nu-err').textContent = ''; }));
+$('pw-gen').addEventListener('click', () => {
+  const p = genPassword();
+  $('pw-new').value = p; $('pw-new2').value = p;
+  setPasswordVisible($('pw-new'), true); setPasswordVisible($('pw-new2'), true);
+  $('pw-gen-note').hidden = false;
+  $('pw-err').textContent = '';
+  drawAccountRules();
+});
 function loadAccount() {
   $('must-banner').hidden = !me.mustChangePassword;
   $('pw-user').value = me.username;
@@ -623,11 +657,14 @@ function loadAccount() {
 $('pw').addEventListener('submit', async (e) => {
   e.preventDefault();
   $('pw-err').textContent = '';
-  if ($('pw-new').value !== $('pw-new2').value) { $('pw-err').textContent = t('acc.mismatch'); return; }
+  if (!pwOk($('pw-new').value)) { $('pw-err').textContent = t('pw.notMet'); $('pw-new').focus(); return; }
+  if ($('pw-new').value !== $('pw-new2').value) { $('pw-err').textContent = t('acc.mismatch'); $('pw-new2').focus(); return; }
   try {
     const r = await api('/api/me/password', { method: 'POST', json: { current: $('pw-cur').value, next: $('pw-new').value } });
     me = r.user;
-    $('pw').reset();
+    $('pw').reset(); drawAccountRules();
+    $('pw-gen-note').hidden = true;
+    ['pw-cur', 'pw-new', 'pw-new2'].forEach((id) => setPasswordVisible($(id), false));
     toast(t('acc.changed'));
     if (!me.mustChangePassword) { $('must-banner').hidden = true; location.hash = 'decks'; init(); }
   } catch (err) { if (err.message !== 'auth') $('pw-err').textContent = err.message; }

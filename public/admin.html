@@ -70,6 +70,7 @@
         </label>
         <label class="field"><span data-i18n="us.password"></span>
           <span class="row"><input id="nu-password" type="text" style="flex:1" autocomplete="new-password"><button type="button" id="nu-gen" data-i18n="us.generate"></button></span>
+          <ul class="pwrules" id="nu-rules"></ul>
         </label>
         <div class="field"><span data-i18n="us.access"></span>
           <select id="nu-access"><option value="all" data-i18n="us.accessAll"></option><option value="groups" data-i18n="us.accessGroups"></option></select>
@@ -194,13 +195,15 @@
     <div class="panel"><h2 data-i18n="acc.title"></h2><div class="grid2" id="acc-info"></div></div>
     <div class="panel">
       <h2 data-i18n="acc.change"></h2>
-      <form id="pw" class="grid2" autocomplete="on">
+      <form id="pw" class="grid2" autocomplete="on" novalidate>
         <input type="text" autocomplete="username" id="pw-user" hidden>
-        <label class="field"><span data-i18n="acc.current"></span><input id="pw-cur" type="password" autocomplete="current-password" required></label>
-        <label class="field"><span data-i18n="acc.new"></span><input id="pw-new" type="password" autocomplete="new-password" required minlength="10"></label>
-        <label class="field"><span data-i18n="acc.new2"></span><input id="pw-new2" type="password" autocomplete="new-password" required minlength="10"></label>
+        <label class="field"><span data-i18n="acc.current"></span><span class="pwwrap"><input id="pw-cur" type="password" autocomplete="current-password" required><button type="button" class="eye" data-eye-for="pw-cur" aria-pressed="false"></button></span></label>
+        <label class="field"><span class="row" style="justify-content:space-between"><span data-i18n="acc.new"></span><button type="button" class="ghost small" id="pw-gen" data-i18n="pw.generate"></button></span><span class="pwwrap"><input id="pw-new" type="password" autocomplete="new-password"><button type="button" class="eye" data-eye-for="pw-new" aria-pressed="false"></button></span></label>
+        <label class="field"><span data-i18n="acc.new2"></span><span class="pwwrap"><input id="pw-new2" type="password" autocomplete="new-password"><button type="button" class="eye" data-eye-for="pw-new2" aria-pressed="false"></button></span></label>
         <div class="field" style="align-self:end"><button class="primary" id="pw-go" data-i18n="acc.change"></button></div>
       </form>
+      <div class="banner ok" id="pw-gen-note" hidden data-i18n="pw.generated"></div>
+      <ul class="pwrules" id="pw-rules"></ul>
       <p class="hint" data-i18n="acc.hint"></p>
       <div class="err" id="pw-err"></div>
     </div>
