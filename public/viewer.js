@@ -23,6 +23,7 @@ async function load() {
 
   const r = await fetch(`/p/${encodeURIComponent(slug)}/deck.json`, { cache: 'no-cache' }).catch(() => null)
     || await caches?.match?.(`/p/${encodeURIComponent(slug)}/deck.json`);
+  if (r && r.status === 401) { location.href = '/login?next=' + encodeURIComponent(location.pathname); return; }
   if (!r || !r.ok) throw new Error('Prezentarea nu a putut fi încărcată.');
   deck = await r.json();
   document.documentElement.style.setProperty('--bg', deck.settings.background);
@@ -227,6 +228,7 @@ function updateHotspots() {
   Object.assign(hsLayer.style, { left: fit.x + 'px', top: fit.y + 'px', width: fit.w + 'px', height: fit.h + 'px' });
   hsLayer.textContent = '';
   hotspots = [];
+  hoverHit = null;
   for (const spot of pageInfo(current).hotspots) {
     if (spot.id && hidden.get(spot.id)) continue;
     const [ta, tb, tc, td, te, tf] = vp.transform;
@@ -283,6 +285,7 @@ function openUrl(url) {
 }
 
 // ------------------------------------------------------------------ input
+let hoverHit = null;
 const pointers = new Map();
 let gesture = null, longTimer = null;
 const next = () => go(current + 1, { dir: 1 });
@@ -296,6 +299,15 @@ stage.addEventListener('pointerdown', (e) => {
     longTimer = setTimeout(() => { if (gesture && !gesture.moved && !gesture.multi) { gesture = null; openMenu(); } }, 700);
   } else if (gesture) { gesture.multi = true; clearTimeout(longTimer); }
 });
+// Desktop: a hand cursor over anything clickable, like links on a web page.
+stage.addEventListener('pointermove', (e) => {
+  if (e.pointerType !== 'mouse' || !slideEl) return;
+  const hit = !gesture && hitTest(e.clientX, e.clientY);
+  const cur = hit ? 'pointer' : '';
+  if (stage.style.cursor !== cur) stage.style.cursor = cur;
+  if (hit !== hoverHit) { hoverHit?.el.classList.remove('hover'); hit && hit.el.classList.add('hover'); hoverHit = hit || null; }
+});
+stage.addEventListener('pointerleave', () => { stage.style.cursor = ''; hoverHit?.el.classList.remove('hover'); hoverHit = null; });
 stage.addEventListener('pointermove', (e) => {
   if (!gesture || !pointers.has(e.pointerId)) return;
   if (Math.hypot(e.clientX - gesture.x, e.clientY - gesture.y) > 12) { gesture.moved = true; clearTimeout(longTimer); }

@@ -2,142 +2,233 @@
 <html lang="ro">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<title>PDF Deck — Prezentări</title>
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>PDF Deck — Administrare</title>
 <link rel="icon" href="/icon.png">
-<style>
-  :root {
-    --bg: #f4f5f7; --card: #fff; --ink: #14171f; --muted: #667085; --line: #e3e6eb;
-    --accent: #2f6bff; --accent-ink: #fff; --danger: #d92d20; --ok: #12805c; --warn: #b54708;
-  }
-  @media (prefers-color-scheme: dark) {
-    :root { --bg: #0f1218; --card: #171b23; --ink: #e9ecf2; --muted: #98a1b2; --line: #272d38; --accent: #4f8cff; }
-  }
-  * { box-sizing: border-box; }
-  body { margin: 0; background: var(--bg); color: var(--ink); font: 15px/1.45 -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; }
-  .wrap { max-width: 1100px; margin: 0 auto; padding: 28px 18px 80px; }
-  header.top { display: flex; align-items: center; gap: 12px; margin-bottom: 22px; }
-  header.top h1 { font-size: 22px; margin: 0; flex: 1; letter-spacing: -.01em; }
-  header.top h1 small { font-weight: 400; color: var(--muted); font-size: 14px; margin-left: 6px; }
-  button, .btn { appearance: none; border: 1px solid var(--line); background: var(--card); color: var(--ink); border-radius: 9px;
-    padding: 8px 13px; font: inherit; font-size: 14px; cursor: pointer; text-decoration: none; display: inline-flex; align-items: center; gap: 6px; white-space: nowrap; }
-  button:hover, .btn:hover { border-color: var(--muted); }
-  .primary { background: var(--accent); border-color: var(--accent); color: var(--accent-ink); }
-  .primary:hover { filter: brightness(1.08); border-color: var(--accent); }
-  .danger { color: var(--danger); }
-  input[type=text], input[type=password], select { font: inherit; color: var(--ink); background: var(--bg); border: 1px solid var(--line);
-    border-radius: 8px; padding: 7px 10px; min-width: 0; }
-  input:focus, select:focus { outline: 2px solid var(--accent); outline-offset: -1px; }
-
-  #drop { display: block; border: 2px dashed var(--line); border-radius: 14px; background: var(--card); padding: 30px; text-align: center; color: var(--muted);
-    transition: border-color .15s, background .15s; cursor: pointer; margin-bottom: 26px; }
-  #drop.over { border-color: var(--accent); background: color-mix(in srgb, var(--accent) 7%, var(--card)); }
-  #drop b { color: var(--ink); }
-  #uploads:empty { display: none; }
-  #uploads { margin: -14px 0 24px; display: grid; gap: 8px; }
-  .up { background: var(--card); border: 1px solid var(--line); border-radius: 10px; padding: 10px 14px; font-size: 14px; }
-  .up .bar { height: 4px; background: var(--line); border-radius: 2px; margin-top: 7px; overflow: hidden; }
-  .up .bar i { display: block; height: 100%; width: 0; background: var(--accent); transition: width .2s; }
-  .up.err { color: var(--danger); }
-
-  .deck { display: grid; grid-template-columns: 180px 1fr; gap: 18px; background: var(--card); border: 1px solid var(--line);
-    border-radius: 14px; padding: 16px; margin-bottom: 14px; }
-  .thumb { width: 180px; aspect-ratio: 1; border-radius: 10px; background: #12161e center/contain no-repeat; display: block; }
-  .deck h2 { margin: 0; font-size: 17px; display: flex; gap: 8px; align-items: center; }
-  .deck h2 input { font-size: 17px; font-weight: 650; flex: 1; background: transparent; border-color: transparent; padding: 4px 6px; margin-left: -6px; }
-  .deck h2 input:hover { border-color: var(--line); }
-  .meta { color: var(--muted); font-size: 13px; margin: 2px 0 10px; }
-  .meta .warn { color: var(--warn); }
-  .url { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; margin-bottom: 12px; }
-  .url .base { color: var(--muted); font-size: 14px; }
-  .url input { width: 220px; }
-  .actions { display: flex; gap: 8px; flex-wrap: wrap; }
-  details { margin-top: 12px; border-top: 1px solid var(--line); padding-top: 10px; }
-  summary { cursor: pointer; color: var(--muted); font-size: 14px; }
-  .settings { display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 10px 18px; margin-top: 10px; font-size: 14px; }
-  .settings label { display: flex; gap: 8px; align-items: center; }
-  .settings input[type=color] { width: 36px; height: 28px; border: 1px solid var(--line); border-radius: 6px; padding: 0; background: none; }
-  .empty { text-align: center; color: var(--muted); padding: 40px 0; }
-
-  #login { max-width: 360px; margin: 18vh auto 0; background: var(--card); border: 1px solid var(--line); border-radius: 14px; padding: 26px; }
-  #login h1 { margin: 0 0 14px; font-size: 20px; }
-  #login input { width: 100%; margin-bottom: 12px; }
-  #login .err { color: var(--danger); font-size: 14px; min-height: 20px; }
-
-  dialog { border: 0; border-radius: 16px; padding: 24px; background: var(--card); color: var(--ink); text-align: center; max-width: 92vw; }
-  dialog::backdrop { background: rgba(0,0,0,.55); }
-  dialog img { width: 300px; max-width: 70vw; background: #fff; border-radius: 8px; padding: 8px; display: block; margin: 10px auto 14px; }
-  .toast { position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%); background: var(--ink); color: var(--bg); padding: 9px 16px;
-    border-radius: 9px; font-size: 14px; opacity: 0; transition: opacity .2s; pointer-events: none; }
-  .toast.show { opacity: 1; }
-  .upform { display: flex; gap: 12px; flex-wrap: wrap; margin-bottom: 10px; }
-  .upform label { display: grid; gap: 4px; font-size: 13px; color: var(--muted); flex: 1; min-width: 200px; }
-  h2.cat { font-size: 20px; margin: 26px 0 10px; }
-  .lang { font-size: 12px; font-weight: 800; letter-spacing: .06em; background: var(--ink); color: var(--card); border-radius: 6px; padding: 3px 7px; }
-  .refchip { font-size: 12px; font-weight: 600; color: var(--muted); border: 1px solid var(--line); border-radius: 99px; padding: 2px 8px; }
-  dialog.report { text-align: left; width: min(860px, 94vw); max-height: 88vh; overflow: auto; padding: 22px; }
-  .rhead { display: flex; justify-content: space-between; gap: 12px; align-items: flex-end; flex-wrap: wrap; }
-  .rhead h2 { margin: 2px 0; font-size: 22px; }
-  .eyebrow { font-size: 12px; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; color: var(--muted); }
-  .tiles { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin: 16px 0 6px; }
-  .tile { border: 1px solid var(--line); border-radius: 10px; padding: 10px 12px; color: var(--muted); font-size: 13px; }
-  .tile b { display: block; font-size: 24px; color: var(--ink); font-variant-numeric: tabular-nums; }
-  .tile.err b { color: var(--danger); } .tile.warnt b { color: var(--warn); } .tile.ok b { color: var(--ok); }
-  .verdict { font-weight: 600; }
-  dialog.report h3 { margin: 20px 0 8px; font-size: 16px; }
-  .okline { background: color-mix(in srgb, var(--ok) 12%, transparent); color: var(--ok); border-radius: 8px; padding: 9px 12px; font-weight: 600; }
-  .issue { border: 1px solid var(--line); border-left: 4px solid var(--muted); border-radius: 9px; margin-bottom: 8px; }
-  .issue.error { border-left-color: var(--danger); } .issue.warning { border-left-color: var(--warn); }
-  .issue summary { cursor: pointer; display: flex; gap: 10px; align-items: center; padding: 10px 12px; list-style: none; }
-  .issue .sev { font-size: 11px; font-weight: 800; text-transform: uppercase; letter-spacing: .05em; color: var(--muted); }
-  .issue.error .sev { color: var(--danger); } .issue.warning .sev { color: var(--warn); }
-  .issue .it { flex: 1; font-weight: 600; } .issue .n { color: var(--muted); font-weight: 700; }
-  .issue .advice { margin: 0 12px 8px; color: var(--muted); font-size: 14px; }
-  .issue ul { list-style: none; margin: 0; padding: 0 12px 10px; display: grid; gap: 3px; font-size: 14px; max-height: 300px; overflow: auto; }
-  .issue li { display: flex; gap: 10px; } .pg { font-weight: 700; min-width: 44px; }
-  .rfoot { margin-top: 14px; text-align: right; }
-  @media (max-width: 640px) { .deck { grid-template-columns: 1fr; } .thumb { width: 100%; max-width: 240px; } }
-</style>
+<link rel="stylesheet" href="/admin.css">
 </head>
 <body>
-  <div id="login" hidden>
-    <h1>PDF Deck</h1>
-    <form id="login-form">
-      <input type="password" id="pw" placeholder="Parola de administrare" autocomplete="current-password" autofocus>
-      <div class="err" id="login-err"></div>
-      <button class="primary" style="width:100%;justify-content:center">Intră</button>
-    </form>
-  </div>
+<div class="wrap">
+  <header class="top">
+    <div class="brand"><div class="mark">PD</div><b id="site">PDF Deck</b></div>
+    <div class="who"><span id="me-name"></span><span class="role" id="me-role"></span></div>
+    <button id="logout" type="button">Ieșire</button>
+  </header>
+  <nav class="tabs" id="tabs">
+    <a href="#decks" data-tab="decks">Prezentări</a>
+    <a href="#stats" data-tab="stats" data-min="editor">Statistici</a>
+    <a href="#users" data-tab="users" data-min="admin">Utilizatori</a>
+    <a href="#log" data-tab="log" data-min="admin">Jurnal</a>
+    <a href="#settings" data-tab="settings" data-min="admin">Setări</a>
+    <a href="#backup" data-tab="backup" data-min="admin">Backup</a>
+    <a href="#account" data-tab="account">Contul meu</a>
+  </nav>
 
-  <div class="wrap" id="app" hidden>
-    <header class="top">
-      <h1>Prezentări <small id="count"></small></h1>
-      <button id="logout" hidden>Ieșire</button>
-    </header>
-
-    <div class="upform">
-      <label>Catalog <input type="text" id="up-catalog" list="up-catalogs" placeholder="de ex. Zeigebuch"></label>
-      <label>Limba <select id="up-lang"><option value="">Detectează din numele fișierului</option><option>DE</option><option>FR</option><option>IT</option><option>EN</option><option>RO</option><option value="XX">Altă limbă</option></select></label>
-      <datalist id="up-catalogs"></datalist>
+  <!-- ================= presentations ================= -->
+  <section id="t-decks" hidden>
+    <div id="editor-tools" hidden>
+      <div class="upform">
+        <label>Catalog <input type="text" id="up-catalog" list="up-catalogs" placeholder="de ex. Zeigebuch"></label>
+        <label>Limba <select id="up-lang"><option value="">Detectează din numele fișierului</option><option>DE</option><option>FR</option><option>IT</option><option>EN</option><option>RO</option><option value="XX">Altă limbă</option></select></label>
+        <datalist id="up-catalogs"></datalist>
+      </div>
+      <label id="drop">
+        <input type="file" id="file" accept="application/pdf,.pdf" multiple hidden>
+        <b>Trage aici PDF-ul exportat din InDesign</b> sau apasă pentru a alege fișierul.<br>
+        <span class="small">Export din InDesign: File → Export → Adobe PDF (Interactive). După încărcare primești raportul de probleme.</span>
+      </label>
+      <div id="uploads"></div>
     </div>
-    <label id="drop">
-      <input type="file" id="file" accept="application/pdf,.pdf" multiple hidden>
-      <b>Trage aici PDF-ul exportat din InDesign</b> sau atinge pentru a alege fișierul.<br>
-      <span style="font-size:13px">Export din InDesign: <i>File → Export → Adobe PDF (Interactive)</i>. Fiecare PDF primește propria adresă.</span>
-    </label>
-    <div id="uploads"></div>
     <div id="list"></div>
-  </div>
+  </section>
 
-  <dialog id="qr">
-    <div id="qr-title" style="font-weight:650"></div>
-    <img id="qr-img" alt="Cod QR">
-    <div style="font-size:13px;color:var(--muted);margin-bottom:14px">Scanează cu camera iPad-ului pentru a deschide prezentarea.</div>
-    <form method="dialog"><button>Închide</button></form>
-  </dialog>
-  <dialog id="report" class="report"><div id="report-body"></div><div class="rfoot"><button id="report-close" type="button">Închide</button></div></dialog>
-  <div class="toast" id="toast"></div>
+  <!-- ================= statistics ================= -->
+  <section id="t-stats" hidden>
+    <div class="tiles" id="st-tiles"></div>
+    <div class="panel"><h2>Prezentări</h2><div class="tablewrap"><table id="st-decks"></table></div></div>
+    <div class="panel"><h2>Ultimele deschideri</h2><div class="tablewrap"><table id="st-recent"></table></div></div>
+  </section>
 
-  <script type="module" src="/admin.js"></script>
+  <!-- ================= users ================= -->
+  <section id="t-users" hidden>
+    <div class="panel">
+      <h2>Adaugă utilizator</h2>
+      <form id="nu" class="grid2" autocomplete="off">
+        <label class="field">Utilizator (pentru logare)<input id="nu-username" required pattern="[a-z0-9._\-]{3,40}" placeholder="de ex. ana.pop" autocapitalize="none" spellcheck="false"></label>
+        <label class="field">Nume afișat<input id="nu-name" placeholder="Ana Pop"></label>
+        <label class="field">Email (opțional)<input id="nu-email" type="email"></label>
+        <label class="field">Rol
+          <select id="nu-role">
+            <option value="viewer">Prezentator — vede și prezintă</option>
+            <option value="editor">Editor — încarcă, înlocuiește, șterge prezentări</option>
+            <option value="admin">Administrator — tot, inclusiv utilizatori și setări</option>
+          </select>
+        </label>
+        <label class="field">Parolă inițială
+          <span class="row"><input id="nu-password" type="text" required minlength="10" style="flex:1" autocomplete="new-password"><button type="button" id="nu-gen">Generează</button></span>
+        </label>
+        <div class="field">Acces la prezentări (pentru prezentatori)
+          <select id="nu-access"><option value="all">Toate prezentările</option><option value="groups">Doar ale grupurilor alese</option></select>
+          <div class="groupchecks" id="nu-groups" hidden></div>
+        </div>
+        <div class="field">
+          <label class="check"><input type="checkbox" id="nu-must" checked> Trebuie să-și schimbe parola la prima logare</label>
+          <div class="row" style="margin-top:6px"><button class="primary" id="nu-go">Creează utilizatorul</button></div>
+        </div>
+      </form>
+      <div class="err" id="nu-err"></div>
+    </div>
+    <div class="panel"><h2>Utilizatori</h2><div class="tablewrap"><table id="users"></table></div></div>
+    <div class="panel">
+      <h2>Grupuri de acces</h2>
+      <p class="hint" style="margin:-6px 0 12px">Un grup dă acces la anumite cataloage și limbi, de exemplu „Romandia” → limba FR.
+        Prezentatorii setați pe „Doar ale grupurilor alese” văd numai prezentările grupurilor lor. Editorii și administratorii văd tot.</p>
+      <div class="tablewrap"><table id="groups"></table></div>
+      <form id="ng" class="grid2" style="margin-top:14px">
+        <label class="field">Nume grup nou<input id="ng-name" placeholder="de ex. Romandia" maxlength="60" required></label>
+        <div class="field">Cataloage (nimic bifat = toate)<div class="groupchecks" id="ng-catalogs"></div></div>
+        <div class="field">Limbi (nimic bifat = toate)<div class="groupchecks" id="ng-langs"></div></div>
+        <div class="field" style="align-self:end"><button class="primary" id="ng-go">Creează grupul</button></div>
+      </form>
+      <div class="err" id="ng-err"></div>
+    </div>
+    <div class="panel"><h2>Sesiuni active</h2><p class="hint" style="margin:-6px 0 10px">Dispozitivele conectate acum. „Închide” deconectează dispozitivul imediat.</p><div class="tablewrap"><table id="sessions"></table></div></div>
+  </section>
+
+  <!-- ================= log ================= -->
+  <section id="t-log" hidden>
+    <div class="panel">
+      <div class="row">
+        <select id="lg-type">
+          <option value="">Toate evenimentele</option>
+          <option value="auth.">Autentificări</option>
+          <option value="auth.login_failed">Doar autentificări eșuate</option>
+          <option value="user.">Utilizatori</option>
+          <option value="deck.">Prezentări (toate)</option>
+          <option value="deck.view">Prezentări deschise</option>
+          <option value="settings.">Setări</option>
+        </select>
+        <input id="lg-user" placeholder="Utilizator" style="width:150px" autocapitalize="none">
+        <input id="lg-q" placeholder="Caută (IP, prezentare, detalii)" style="flex:1;min-width:180px">
+        <button id="lg-go" class="primary" type="button">Filtrează</button>
+        <button id="lg-csv" type="button">Descarcă CSV</button>
+      </div>
+    </div>
+    <div class="panel"><div class="tablewrap"><table id="log"></table></div>
+      <div class="row" style="margin-top:12px;justify-content:center"><button id="lg-more" type="button">Arată mai multe</button></div></div>
+  </section>
+
+  <!-- ================= settings ================= -->
+  <section id="t-settings" hidden>
+    <form id="sf">
+      <div class="panel">
+        <h2>General</h2>
+        <div class="grid2">
+          <label class="field">Numele platformei<input id="s-siteName" maxlength="60"></label>
+          <label class="field">Cine poate deschide prezentările
+            <select id="s-access">
+              <option value="login">Doar utilizatorii autentificați</option>
+              <option value="public">Oricine are linkul</option>
+            </select>
+          </label>
+        </div>
+        <p class="hint">O prezentare anume poate fi deschisă fără cont dacă bifezi „Link public” în setările ei.</p>
+        <label class="check" style="margin-top:10px"><input type="checkbox" id="s-logViews"> Înregistrează în jurnal fiecare deschidere de prezentare</label>
+      </div>
+      <div class="panel">
+        <h2>Securitate</h2>
+        <div class="grid2">
+          <label class="field">Sesiunea expiră după (zile)<input id="s-sessionDays" type="number" min="1" max="365"></label>
+          <label class="field">Încercări greșite până la blocare<input id="s-maxAttempts" type="number" min="3" max="20"></label>
+          <label class="field">Durata blocării (minute)<input id="s-lockMinutes" type="number" min="1" max="1440"></label>
+        </div>
+        <p class="hint">Pe iPad, o sesiune lungă înseamnă că prezentatorii nu trebuie să se autentifice des.</p>
+      </div>
+      <div class="panel">
+        <h2>Setări implicite pentru prezentările noi</h2>
+        <div class="settings" id="s-presenter"></div>
+      </div>
+      <div class="panel">
+        <h2>Notificări pe email</h2>
+        <div id="n-status" class="banner"></div>
+        <div class="grid2">
+          <label class="field">Destinatari (câte o adresă pe rând)<textarea id="n-recipients" rows="3" spellcheck="false"></textarea></label>
+          <div class="field">Trimite email când
+            <div id="n-events" style="display:grid;gap:6px;margin-top:4px"></div>
+          </div>
+        </div>
+        <div class="row" style="margin-top:12px"><button type="button" id="n-test">Trimite un email de test</button><span class="hint" id="n-test-msg"></span></div>
+      </div>
+      <div class="row"><button class="primary" id="s-save">Salvează setările</button><span class="err" id="s-err"></span></div>
+    </form>
+  </section>
+
+  <!-- ================= backup ================= -->
+  <section id="t-backup" hidden>
+    <div class="panel">
+      <h2>Backup automat</h2>
+      <p class="hint" style="margin:-6px 0 12px">Un backup conține utilizatorii, grupurile, setările, toate prezentările (PDF, rapoarte, miniaturi) și jurnalul.
+        Backup-urile stau pe același disc ca platforma, așa că descarcă din când în când unul pe calculatorul tău.</p>
+      <div class="row">
+        <label class="check"><input type="checkbox" id="b-auto"> Fă un backup automat o dată pe zi</label>
+        <label class="row" style="gap:6px">păstrează ultimele <input id="b-keep" type="number" min="1" max="60" style="width:70px"> backup-uri automate</label>
+        <button id="b-save" type="button">Salvează</button>
+      </div>
+    </div>
+    <div class="panel">
+      <div class="row" style="justify-content:space-between;margin-bottom:10px">
+        <h2 style="margin:0">Backup-uri</h2>
+        <div class="row"><span class="hint" id="b-total"></span><button class="primary" id="b-now" type="button">Creează backup acum</button></div>
+      </div>
+      <div class="tablewrap"><table id="b-list"></table></div>
+    </div>
+    <div class="panel">
+      <h2>Restaurare dintr-un fișier</h2>
+      <p class="hint" style="margin:-6px 0 12px">Înlocuiește toate datele actuale cu cele din backup. Înainte, platforma face automat o copie a stării actuale.
+        Toată lumea va trebui să se autentifice din nou, iar serverul repornește (durează câteva secunde).</p>
+      <div class="row"><input type="file" id="r-file" accept=".zip,application/zip"><button id="r-go" class="danger" type="button" disabled>Restaurează din fișier</button></div>
+      <div class="err" id="r-err"></div>
+    </div>
+  </section>
+
+  <!-- ================= my account ================= -->
+  <section id="t-account" hidden>
+    <div class="banner warn" id="must-banner" hidden>Pentru siguranță, alege o parolă nouă înainte de a continua.</div>
+    <div class="panel">
+      <h2>Contul meu</h2>
+      <div class="grid2" id="acc-info"></div>
+    </div>
+    <div class="panel">
+      <h2>Schimbă parola</h2>
+      <form id="pw" class="grid2" autocomplete="on">
+        <input type="text" autocomplete="username" id="pw-user" hidden>
+        <label class="field">Parola actuală<input id="pw-cur" type="password" autocomplete="current-password" required></label>
+        <label class="field">Parola nouă<input id="pw-new" type="password" autocomplete="new-password" required minlength="10"></label>
+        <label class="field">Repetă parola nouă<input id="pw-new2" type="password" autocomplete="new-password" required minlength="10"></label>
+        <div class="field" style="align-self:end"><button class="primary" id="pw-go">Schimbă parola</button></div>
+      </form>
+      <p class="hint">Minimum 10 caractere, cu litere și cifre. După schimbare, celelalte dispozitive conectate sunt deconectate.</p>
+      <div class="err" id="pw-err"></div>
+    </div>
+  </section>
+</div>
+
+<dialog id="qr" class="qr">
+  <div id="qr-title" style="font-weight:650"></div>
+  <img id="qr-img" alt="Cod QR">
+  <div class="small muted" style="margin-bottom:14px">Scanează cu camera iPad-ului pentru a deschide prezentarea.</div>
+  <form method="dialog"><button>Închide</button></form>
+</dialog>
+<dialog id="report" class="report"><div id="report-body"></div><div class="rfoot"><button id="report-close" type="button">Închide</button></div></dialog>
+<dialog id="access" class="report">
+  <h2 style="margin:0 0 4px">Acces la prezentări</h2>
+  <p class="muted" id="ac-user" style="margin:0 0 12px"></p>
+  <label class="check"><input type="radio" name="ac" value="all"> Toate prezentările</label>
+  <label class="check" style="margin-top:6px"><input type="radio" name="ac" value="groups"> Doar prezentările grupurilor alese:</label>
+  <div class="groupchecks" id="ac-groups" style="margin:8px 0 0 24px"></div>
+  <div class="rfoot"><button type="button" id="ac-cancel">Renunță</button> <button type="button" class="primary" id="ac-save">Salvează</button></div>
+</dialog>
+<div class="toast" id="toast"></div>
+<script type="module" src="/admin.js"></script>
 </body>
 </html>

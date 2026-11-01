@@ -16,7 +16,10 @@ unui reverse proxy (Caddy, Nginx, Cloudflare Tunnel etc.).
 
 | Variabilă | Implicit | Rol |
 |---|---|---|
-| `ADMIN_PASSWORD` | – | parola pentru /admin (fără ea, admin-ul e deschis) |
+| `ADMIN_PASSWORD` | – | parola contului `admin`, folosită **doar la prima pornire** (când nu există încă niciun administrator) |
+| `ADMIN_USERNAME` | `admin` | numele contului de administrator creat la prima pornire |
+| `ADMIN_RESET_PASSWORD` | – | urgență: resetează parola administratorului la pornire; șterge variabila după |
+| `SMTP_HOST`, `SMTP_PORT`, `SMTP_USER`, `SMTP_PASS`, `SMTP_FROM` | – | serverul de email pentru notificări (`SMTP_SECURE=true` pentru portul 465) |
 | `PORT` | 3000 | |
 | `DATA_DIR` | `./data` | PDF-uri, analize, miniaturi, `decks.json` |
 | `PUBLIC_URL` | – | adresa publică folosită în linkuri/QR |
@@ -32,6 +35,31 @@ unui reverse proxy (Caddy, Nginx, Cloudflare Tunnel etc.).
 6. Deschide `/admin`, intră cu parola, alege catalogul și limba, încarcă PDF-ul. Raportul apare imediat.
 
 Fiecare `git push` pe ramura principală publică automat o versiune nouă; PDF-urile din volum rămân.
+
+## Conturi, roluri, jurnal
+
+- **Administrator**: tot, inclusiv utilizatori, setări și jurnal.
+- **Editor**: încarcă, înlocuiește, editează și șterge prezentări; vede statisticile.
+- **Prezentator**: vede biblioteca și prezintă.
+
+Din `/admin`:
+- **Utilizatori**: adaugi conturi (cu parolă generată), schimbi rolul, resetezi parola, dezactivezi sau ștergi; vezi sesiunile active și le poți închide.
+  Conturile noi își aleg singure parola la prima logare.
+- **Jurnal**: autentificări (inclusiv eșuate), conturi blocate, încărcări, ștergeri, modificări, fiecare deschidere de prezentare — cu filtre și export CSV.
+- **Statistici**: deschideri pe prezentare, ultimele deschideri, autentificări eșuate.
+- **Setări**: numele platformei, cine poate deschide prezentările (doar cu cont sau oricine are linkul),
+  durata sesiunii, blocarea după încercări greșite, setările implicite ale prezentărilor.
+- **Contul meu**: schimbarea parolei (deconectează celelalte dispozitive).
+
+- **Grupuri de acces** (în *Utilizatori*): un grup dă acces la anumite cataloage și/sau limbi (de ex. „Romandia” → FR).
+  Un prezentator setat pe „Doar ale grupurilor alese” vede numai acele prezentări — și nici PDF-ul celorlalte nu i se trimite.
+- **Backup**: automat o dată pe zi (se păstrează ultimele N), manual la cerere, descărcare, ștergere și restaurare
+  (dintr-un backup de pe server sau dintr-un fișier). Înainte de restaurare se face automat o copie a stării actuale;
+  după restaurare serverul repornește singur.
+- **Notificări pe email** (în *Setări*): cont blocat, multe logări eșuate, prezentare nouă / versiune nouă, prezentare ștearsă,
+  utilizatori creați / șterși / dezactivați, backup eșuat. Buton pentru email de test.
+
+Parolele sunt stocate doar ca hash (scrypt). Parola serverului de email stă doar în variabilele de mediu, nu în date sau în backup. Datele stau în `DATA_DIR`: `users.json`, `sessions.json`, `settings.json`, `decks.json`, `logs/`.
 
 ## Flux de lucru
 

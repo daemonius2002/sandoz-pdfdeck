@@ -27,6 +27,7 @@
   .hs { position: absolute; border-radius: 6px; }
   .hs.flash { animation: flash .35s ease-out; }
   @keyframes flash { from { background: rgba(255,255,255,.35); } to { background: rgba(255,255,255,0); } }
+  @media (hover: hover) { .hs.hover { box-shadow: 0 0 0 2px rgba(255,255,255,.55), 0 0 18px rgba(255,255,255,.25); } }
   body.debug .hs { outline: 2px dashed rgba(79,140,255,.9); background: rgba(79,140,255,.15); }
 
   #indicator { position: fixed; right: max(14px, env(safe-area-inset-right)); bottom: max(12px, env(safe-area-inset-bottom));

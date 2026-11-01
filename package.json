@@ -10,8 +10,10 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
+    "adm-zip": "^0.5.18",
     "express": "^5.3.0",
     "multer": "^2.5.0",
+    "nodemailer": "^7.0.13",
     "pdf-lib": "^1.17.1",
     "pdfjs-dist": "^6.4.299",
     "qrcode": "^1.5.4"

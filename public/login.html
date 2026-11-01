@@ -1,0 +1,45 @@
+<!doctype html>
+<html lang="ro">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<title>Autentificare</title>
+<link rel="icon" href="/icon.png">
+<link rel="stylesheet" href="/admin.css">
+</head>
+<body class="login-page">
+  <main class="login-card">
+    <div class="brand"><div class="mark">PD</div><b id="site">PDF Deck</b></div>
+    <h1>Autentificare</h1>
+    <form id="f" autocomplete="on">
+      <label>Utilizator<input id="u" name="username" autocomplete="username" autocapitalize="none" spellcheck="false" required></label>
+      <label>Parolă<input id="p" name="password" type="password" autocomplete="current-password" required></label>
+      <div class="err" id="err" role="alert"></div>
+      <button class="btn primary wide" id="go">Intră</button>
+    </form>
+    <p class="muted small">Ai uitat parola? Cere administratorului să ți-o reseteze.</p>
+  </main>
+<script>
+  const next = (() => { const n = new URLSearchParams(location.search).get('next') || '/admin'; return /^\/(?!\/)/.test(n) ? n : '/admin'; })();
+  fetch('/api/me').then((r) => r.json()).then((m) => {
+    document.getElementById('site').textContent = m.siteName || 'PDF Deck';
+    if (m.user && !m.user.mustChangePassword) location.replace(next);
+    if (m.needsSetup) document.getElementById('err').textContent = 'Nu există încă un administrator. Setează ADMIN_PASSWORD pe server și repornește-l.';
+  }).catch(() => {});
+  document.getElementById('f').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const btn = document.getElementById('go'), err = document.getElementById('err');
+    btn.disabled = true; err.textContent = '';
+    try {
+      const r = await fetch('/api/login', { method: 'POST', headers: { 'Content-Type': 'application/json', 'X-PDFDeck': '1' },
+        body: JSON.stringify({ username: document.getElementById('u').value, password: document.getElementById('p').value }) });
+      const d = await r.json().catch(() => ({}));
+      if (!r.ok) { err.textContent = d.error || 'Autentificarea nu a reușit.'; document.getElementById('p').select(); return; }
+      location.replace(d.user?.mustChangePassword ? '/admin#account' : next);
+    } catch { err.textContent = 'Serverul nu răspunde. Verifică conexiunea.'; }
+    finally { btn.disabled = false; }
+  });
+</script>
+</body>
+</html>
