@@ -359,3 +359,12 @@ td select { padding-right: 30px; }
 #users td:nth-child(2) input { width: 140px !important; }
 td.detail { min-width: 200px; max-width: 340px; overflow-wrap: anywhere; }
 td.tgt { max-width: 220px; overflow-wrap: anywhere; }
+/* map tiles (OpenStreetMap): calmer colours by day, inverted to a dark map by night */
+.osm-tiles { filter: saturate(.55) brightness(1.04) contrast(.95); }
+:root[data-theme="dark"] .osm-tiles { filter: invert(1) hue-rotate(180deg) saturate(.35) brightness(.85) contrast(.9); }
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) .osm-tiles { filter: invert(1) hue-rotate(180deg) saturate(.35) brightness(.85) contrast(.9); } }
+.leaflet-bar a { background: var(--surface); color: var(--ink); border-bottom-color: var(--line); }
+.leaflet-bar a:hover { background: var(--soft); color: var(--ink); }
+.leaflet-touch .leaflet-bar { border: 0; box-shadow: var(--shadow); border-radius: 10px; overflow: hidden; }
+.leaflet-container .leaflet-control-attribution { background: color-mix(in srgb, var(--surface) 80%, transparent); color: var(--muted); border-radius: 8px 0 0 0; }
+.leaflet-popup-content-wrapper, .leaflet-popup-tip { background: var(--surface); color: var(--ink); }

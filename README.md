@@ -68,7 +68,7 @@ calculată **pe server** din adresa IP, în baza de date gratuită DB-IP „IP t
 Nicio adresă IP nu este trimisă către alt serviciu. La prima pornire serverul descarcă baza (~120 MB) în
 `/data/geo` și o reîmprospătează lunar; până se termină descărcarea, harta afișează un mesaj.
 
-- **Panou** → harta (fundal OpenStreetMap / CARTO, zi sau noapte după temă), filtre Deschideri / Logări / Eșuate,
+- **Panou** → harta (fundal OpenStreetMap, gratuit, fără cheie; noaptea harta devine închisă), filtre Deschideri / Logări / Eșuate,
   tabel cu țări și orașe, activitate recentă.
 - **Jurnal** și **Sesiuni active** au coloana *Locație*; exportul CSV o include.
 - Variabile opționale: `GEOIP=off` oprește localizarea; `GEOIP_DB_PATH=/cale/fisier.mmdb` folosește altă bază

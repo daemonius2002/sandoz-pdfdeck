@@ -218,10 +218,8 @@ async function renderActivity() {
     : `<div class="empty">${icon('inbox')}${t('home.noActivity')}</div>`;
 }
 
-const tileUrl = () => {
-  const dark = document.documentElement.dataset.theme === 'dark' || (document.documentElement.dataset.theme !== 'light' && matchMedia('(prefers-color-scheme: dark)').matches);
-  return `https://{s}.basemaps.cartocdn.com/${dark ? 'dark_all' : 'light_all'}/{z}/{x}/{y}{r}.png`;
-};
+// OpenStreetMap tiles: free, no key or account. Night mode darkens them with a CSS filter (admin.css).
+const tileUrl = () => 'https://tile.openstreetmap.org/{z}/{x}/{y}.png';
 const css = (v) => getComputedStyle(document.documentElement).getPropertyValue(v).trim();
 async function drawMap() {
   if (!L) L = await import('/vendor/leaflet/leaflet-src.esm.js');
@@ -229,11 +227,11 @@ async function drawMap() {
   if (!map) {
     map = L.map('map', { worldCopyJump: true, scrollWheelZoom: false, attributionControl: true }).setView([48, 12], 4);
     map.attributionControl.setPrefix(false);
-    tiles = L.tileLayer(tileUrl(), { maxZoom: 18, subdomains: 'abcd',
-      attribution: '© <a href="https://www.openstreetmap.org/copyright" target="_blank">OpenStreetMap</a> © <a href="https://carto.com/attributions" target="_blank">CARTO</a> · <a href="https://db-ip.com" target="_blank">IP Geolocation by DB-IP</a>' }).addTo(map);
+    tiles = L.tileLayer(tileUrl(), { maxZoom: 18, className: 'osm-tiles', referrerPolicy: 'strict-origin-when-cross-origin',
+      attribution: '© <a href="https://www.openstreetmap.org/copyright" target="_blank">OpenStreetMap</a> · <a href="https://db-ip.com" target="_blank">IP Geolocation by DB-IP</a>' }).addTo(map);
     mapLayer = L.layerGroup().addTo(map);
     map.on('click', () => map.scrollWheelZoom.enable());
-    window.addEventListener('themechange', () => { tiles.setUrl(tileUrl()); drawPoints(); });
+    window.addEventListener('themechange', () => drawPoints());
   } else {
     map.invalidateSize();
   }
