@@ -386,6 +386,7 @@ function openDeckSettings(d) {
     <label class="check" style="margin-top:16px"><input type="checkbox" data-f="reference" ${d.reference ? 'checked' : ''}> ${t('deck.isReference')}</label>
     <h3>${t('deck.settings')}</h3>
     <div class="settings">${presenterControls(d.settings || {}, 'data-s')}</div>
+    ${atLeast('admin') ? `<h3>${t('deck.who')}</h3><p class="hint" style="margin:-4px 0 12px">${t('deck.whoHint')}</p><div class="whobox" id="whobox"><span class="muted small">${t('common.loading')}</span></div>` : ''}
     <h3>${t('deck.actions')}</h3>
     <div class="row">
       <a class="btn primary" href="${esc(d.url)}" target="_blank">${t('deck.play')}</a>
@@ -396,6 +397,23 @@ function openDeckSettings(d) {
       <button type="button" data-a="delete" class="danger">${t('common.delete')}</button>
     </div>`;
   if (!$('deckdlg').open) $('deckdlg').showModal();
+  if (atLeast('admin')) loadWho(d);
+}
+async function loadWho(d) {
+  try {
+    const [users, g] = await Promise.all([api('/api/users'), api('/api/groups')]);
+    groupData = g; userList = users;
+    const viewers = users.filter((u) => u.role === 'viewer').sort((a, b) => a.username.localeCompare(b.username));
+    const box = $('whobox'); if (!box || editDeck?.id !== d.id) return;
+    box.innerHTML = viewers.length ? viewers.map((u) => {
+      const all = u.allDecks !== false;
+      const viaGroup = !all && groupData.groups.some((x) => u.groups?.includes(x.id) && (!x.catalogs?.length || x.catalogs.includes(d.catalog)) && (!x.langs?.length || x.langs.includes(d.lang)));
+      const direct = (u.decks || []).includes(d.id);
+      const note = all ? t('deck.seesAll') : viaGroup ? t('deck.viaGroup') : '';
+      return `<label class="who ${all || viaGroup ? 'fixed' : ''}"><input type="checkbox" data-who="${u.id}" ${all || viaGroup || direct ? 'checked' : ''} ${all || viaGroup ? 'disabled' : ''}>
+        <span class="avatar">${esc(initials(u.name || u.username))}</span><span><b>${esc(u.username)}</b>${u.name && u.name !== u.username ? ` <span class="muted">${esc(u.name)}</span>` : ''}${note ? `<small>${esc(note)}</small>` : ''}</span></label>`;
+    }).join('') : `<span class="muted small">${t('deck.noViewers')}</span>`;
+  } catch (e) { if (e.message !== 'auth') toast(e.message); }
 }
 $('deckdlg-body').addEventListener('click', (e) => {
   const b = e.target.closest('button[data-a]'); if (!b || !editDeck) return;
@@ -405,6 +423,14 @@ $('deckdlg-body').addEventListener('click', (e) => {
 $('deckdlg-body').addEventListener('keydown', (e) => { if (e.key === 'Enter' && e.target.matches('input[type=text]')) { e.preventDefault(); e.target.blur(); } });
 $('deckdlg-body').addEventListener('change', async (e) => {
   const d = editDeck, el = e.target; if (!d) return;
+  if (el.dataset.who) {
+    const u = userList.find((x) => x.id === el.dataset.who); if (!u) return;
+    const list = new Set(u.decks || []);
+    if (el.checked) list.add(d.id); else list.delete(d.id);
+    try { const upd = await api(`/api/users/${u.id}`, { method: 'PATCH', json: { decks: [...list] } }); Object.assign(u, upd); toast(t('deck.whoSaved')); }
+    catch (err) { toast(err.message); el.checked = !el.checked; }
+    return;
+  }
   let body;
   if (el.dataset.f) body = { [el.dataset.f]: el.type === 'checkbox' ? el.checked : el.value };
   else if (el.dataset.s) body = { settings: { [el.dataset.s]: el.type === 'checkbox' ? el.checked : el.value } };
@@ -526,14 +552,17 @@ window.addEventListener('langchange', () => { if ($('report').open && reportDeck
 let groupData = { groups: [], catalogs: [], langs: [] }, userList = [];
 async function loadUsers() {
   try {
-    const [users, sessions, g] = await Promise.all([api('/api/users'), api('/api/sessions'), api('/api/groups')]);
-    groupData = g; userList = users;
+    const [users, sessions, g, list] = await Promise.all([api('/api/users'), api('/api/sessions'), api('/api/groups'), api('/api/decks')]);
+    groupData = g; userList = users; decks = list;
     renderGroups();
     $('users').innerHTML = `<tr><th>${t('us.col.user')}</th><th>${t('us.col.name')}</th><th>${t('us.col.role')}</th><th>${t('us.col.access')}</th><th>${t('us.col.status')}</th><th>${t('us.col.lastLogin')}</th><th class="num">${t('us.col.sessions')}</th><th></th></tr>` + users.map((u) => {
       const self = u.id === me.id;
       const access = u.role !== 'viewer' ? `<span class="muted small">${t('us.allByRole')}</span>`
         : u.allDecks !== false ? `<span class="small">${t('us.allDecks')}</span>`
-        : `<div class="pillset">${(u.groups || []).map((id) => groupData.groups.find((x) => x.id === id)).filter(Boolean).map((x) => `<span>${esc(x.name)}</span>`).join('') || `<span>${t('us.noGroup')}</span>`}</div>`;
+        : `<div class="pillset">${[
+            ...(u.decks || []).map((id) => decks.find((d) => d.id === id)).filter(Boolean).map((d) => `<span>${esc(d.title)} · ${esc(d.lang)}</span>`),
+            ...(u.groups || []).map((id) => groupData.groups.find((x) => x.id === id)).filter(Boolean).map((x) => `<span class="grp">${t('deck.viaGroup')}: ${esc(x.name)}</span>`),
+          ].join('') || `<span class="none">${t('us.noGroup')}</span>`}</div>`;
       return `<tr data-uid="${u.id}" data-username="${esc(u.username)}">
         <td><div class="usercell"><span class="avatar">${esc(initials(u.name || u.username))}</span><div><b>${esc(u.username)}${self ? ` <span class="muted small" style="font-weight:400">${t('us.you')}</span>` : ''}</b>${u.email ? `<span class="small muted">${esc(u.email)}</span>` : ''}</div></div></td>
         <td><input type="text" data-u="name" value="${esc(u.name)}" style="width:160px"></td>
@@ -559,7 +588,7 @@ function deviceName(ua = '') {
 }
 
 const drawNewUserRules = pwChecklist($('nu-password'), $('nu-rules'));
-$('nu-open').addEventListener('click', () => { $('nu-err').textContent = ''; $('nudlg').showModal(); $('nu-username').focus(); });
+$('nu-open').addEventListener('click', () => { $('nu-err').textContent = ''; $('nu-groups').innerHTML = accessPicker('nu'); $('nu-access').closest('.field').hidden = $('nu-role').value !== 'viewer'; $('nudlg').showModal(); $('nu-username').focus(); });
 $('nu-gen').addEventListener('click', () => { $('nu-password').value = genPassword(); $('nu-err').textContent = ''; drawNewUserRules(); });
 // usernames keep their capital letters; accents and spaces are converted as the admin types
 $('nu-username').addEventListener('input', (e) => {
@@ -575,6 +604,8 @@ function newUserProblem(username, pw) {
   return null;
 }
 $('nu-access').addEventListener('change', () => { $('nu-groups').hidden = $('nu-access').value !== 'groups'; });
+// the choice of presentations only matters for presenters (editors and admins see everything)
+$('nu-role').addEventListener('change', () => { $('nu-access').closest('.field').hidden = $('nu-role').value !== 'viewer'; });
 $('nu').addEventListener('submit', async (e) => {
   e.preventDefault();
   $('nu-err').textContent = '';
@@ -586,10 +617,9 @@ $('nu').addEventListener('submit', async (e) => {
       username: $('nu-username').value.trim(), name: $('nu-name').value, email: $('nu-email').value,
       role: $('nu-role').value, password: pw, mustChangePassword: $('nu-must').checked,
       allDecks: $('nu-access').value === 'all',
-      groups: [...$('nu-groups').querySelectorAll('input:checked')].map((x) => x.value),
+      decks: picked($('nu-groups'), 'nu', 'd'), groups: picked($('nu-groups'), 'nu', 'g'),
     } });
-    $('nu-groups').hidden = true;
-    $('nu').reset(); drawNewUserRules();
+    $('nu').reset(); $('nu-groups').hidden = false; drawNewUserRules();
     $('nudlg').close();
     showSecret(t('us.created', { u: u.username }), t('us.createdText'), u.username, pw);
     loadUsers();
@@ -642,6 +672,16 @@ $('sessions').addEventListener('click', async (e) => {
 
 // access groups
 const checks = (name, items, selected = []) => items.map(([v, label]) => `<label><input type="checkbox" name="${name}" value="${esc(v)}" ${selected.includes(v) ? 'checked' : ''}> ${esc(label)}</label>`).join('');
+// Choice of presentations (one by one) plus, optionally, whole groups; used for new users and in the access dialog.
+function accessPicker(prefix, selDecks = [], selGroups = []) {
+  const cats = [...new Set(decks.map((d) => d.catalog))].sort((a, b) => a.localeCompare(b));
+  const deckPart = decks.length ? cats.map((c) => `<div class="pick-cat">${esc(c)}</div><div class="groupchecks">${checks(prefix + '-d',
+      decks.filter((d) => d.catalog === c).sort((a, b) => (LANG_ORDER[a.lang] ?? 9) - (LANG_ORDER[b.lang] ?? 9)).map((d) => [d.id, `${d.title} · ${d.lang}`]), selDecks)}</div>`).join('')
+    : `<span class="small muted">${t('ac.noDecks')}</span>`;
+  const groupPart = groupData.groups.length ? `<div class="pick-cat" style="margin-top:14px">${t('ac.viaGroups')}</div><div class="groupchecks">${checks(prefix + '-g', groupData.groups.map((g) => [g.id, g.name]), selGroups)}</div>` : '';
+  return `<div class="picker"><div class="pick-cat">${t('ac.decks')}</div>${deckPart}${groupPart}</div>`;
+}
+const picked = (box, prefix, kind) => [...box.querySelectorAll(`input[name="${prefix}-${kind}"]:checked`)].map((x) => x.value);
 function renderGroups() {
   const { groups, catalogs, langs } = groupData;
   $('groups').innerHTML = groups.length ? `<tr><th>${t('gr.col.group')}</th><th>${t('gr.col.catalogs')}</th><th>${t('gr.col.langs')}</th><th class="num">${t('gr.col.decks')}</th><th>${t('gr.col.members')}</th><th></th></tr>` + groups.map((g) => `<tr data-gid="${g.id}">
@@ -654,7 +694,7 @@ function renderGroups() {
     : `<tr><td class="muted">${t('gr.none')}</td></tr>`;
   $('ng-catalogs').innerHTML = catalogs.length ? checks('ngc', catalogs.map((c) => [c, c])) : `<span class="small muted">${t('gr.uploadFirst')}</span>`;
   $('ng-langs').innerHTML = checks('ngl', langs.filter((l) => l !== 'XX').map((l) => [l, l]));
-  $('nu-groups').innerHTML = groups.length ? checks('nug', groups.map((g) => [g.id, g.name])) : `<span class="small muted">${t('gr.createFirst')}</span>`;
+  $('nu-groups').innerHTML = accessPicker('nu');
 }
 $('ng').addEventListener('submit', async (e) => {
   e.preventDefault();
@@ -681,18 +721,19 @@ $('groups').addEventListener('click', async (e) => {
 });
 
 let accessUser = null;
+$('ac-groups').addEventListener('change', () => { document.querySelector('input[name=ac][value=groups]').checked = true; });
 function openAccess(u) {
   accessUser = u;
   $('ac-user').textContent = `${u.name} (${u.username})`;
   document.querySelector(`input[name=ac][value=${u.allDecks !== false ? 'all' : 'groups'}]`).checked = true;
-  $('ac-groups').innerHTML = groupData.groups.length ? checks('acg', groupData.groups.map((g) => [g.id, g.name]), u.groups || []) : `<span class="small muted">${t('gr.noGroups')}</span>`;
+  $('ac-groups').innerHTML = accessPicker('ac', u.decks || [], u.groups || []);
   $('access').showModal();
 }
 $('ac-save').addEventListener('click', async () => {
   try {
     await api(`/api/users/${accessUser.id}`, { method: 'PATCH', json: {
       allDecks: document.querySelector('input[name=ac]:checked').value === 'all',
-      groups: [...$('ac-groups').querySelectorAll('input:checked')].map((x) => x.value),
+      decks: picked($('ac-groups'), 'ac', 'd'), groups: picked($('ac-groups'), 'ac', 'g'),
     } });
     $('access').close(); toast(t('ac.saved')); loadUsers();
   } catch (err) { toast(err.message); }

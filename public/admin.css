@@ -368,3 +368,15 @@ td.tgt { max-width: 220px; overflow-wrap: anywhere; }
 .leaflet-touch .leaflet-bar { border: 0; box-shadow: var(--shadow); border-radius: 10px; overflow: hidden; }
 .leaflet-container .leaflet-control-attribution { background: color-mix(in srgb, var(--surface) 80%, transparent); color: var(--muted); border-radius: 8px 0 0 0; }
 .leaflet-popup-content-wrapper, .leaflet-popup-tip { background: var(--surface); color: var(--ink); }
+/* choosing presentations for a user / users for a presentation */
+.picker { display: grid; gap: 6px; max-height: 340px; overflow: auto; padding: 4px 2px; }
+.pick-cat { font-size: 12px; font-weight: 600; text-transform: uppercase; letter-spacing: .04em; color: var(--faint); margin-top: 6px; }
+.picker .groupchecks { flex-direction: column; gap: 6px; }
+.pillset span.grp { background: var(--soft); color: var(--muted); }
+.pillset span.none { background: var(--warn-soft); color: var(--warn); }
+.whobox { display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 8px; }
+.who { display: flex; align-items: center; gap: 10px; padding: 10px 12px; border-radius: var(--r-sm); background: var(--surface-2); box-shadow: inset 0 0 0 1px var(--line); color: var(--ink); cursor: pointer; font-size: 15px; }
+.who:has(input:checked) { box-shadow: inset 0 0 0 2px var(--brand); background: var(--brand-soft); }
+.who.fixed { cursor: default; opacity: .75; }
+.who .avatar { width: 30px; height: 30px; font-size: 12px; }
+.who small { display: block; color: var(--muted); font-size: 12px; }

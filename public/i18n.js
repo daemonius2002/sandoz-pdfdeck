@@ -73,14 +73,14 @@ const RO = {
   'us.add': 'Adaugă utilizator', 'us.username': 'Utilizator (pentru logare)', 'us.usernamePh': 'de ex. Alex1 sau Ana.Pop',
   'us.name': 'Nume afișat', 'us.namePh': 'Ana Pop', 'us.email': 'Email (opțional)', 'us.role': 'Rol',
   'us.password': 'Parolă inițială', 'us.generate': 'Generează', 'us.access': 'Acces la prezentări (pentru prezentatori)',
-  'us.accessAll': 'Toate prezentările', 'us.accessGroups': 'Doar ale grupurilor alese',
+  'us.accessAll': 'Toate prezentările', 'us.accessGroups': 'Doar prezentările alese',
   'us.must': 'Trebuie să-și schimbe parola la prima logare', 'us.create': 'Creează utilizatorul',
   'us.list': 'Utilizatori', 'us.sessions': 'Sesiuni active',
   'us.sessionsHint': 'Dispozitivele conectate acum. „Închide” deconectează dispozitivul imediat.',
   'us.col.user': 'Utilizator', 'us.col.name': 'Nume', 'us.col.role': 'Rol', 'us.col.access': 'Acces', 'us.col.status': 'Stare',
   'us.col.lastLogin': 'Ultima logare', 'us.col.sessions': 'Sesiuni',
   'us.col.device': 'Dispozitiv', 'us.col.ip': 'IP', 'us.col.lastSeen': 'Ultima activitate', 'us.col.expires': 'Expiră',
-  'us.you': '(tu)', 'us.allByRole': 'toate (rol)', 'us.allDecks': 'toate', 'us.noGroup': 'niciun grup', 'us.edit': 'modifică',
+  'us.you': '(tu)', 'us.allByRole': 'toate (rol)', 'us.allDecks': 'toate', 'us.noGroup': 'nicio prezentare', 'us.edit': 'modifică',
   'us.disabled': 'dezactivat', 'us.mustChange': 'trebuie să schimbe parola', 'us.active': 'activ',
   'us.reset': 'Resetează parola', 'us.confirmReset': 'Confirmi resetarea?', 'us.disable': 'Dezactivează', 'us.enable': 'Reactivează',
   'us.closeSession': 'Închide', 'us.noSessions': 'Nicio sesiune activă.',
@@ -100,14 +100,14 @@ const RO = {
 
   // groups
   'gr.title': 'Grupuri de acces',
-  'gr.hint': 'Un grup dă acces la anumite cataloage și limbi, de exemplu „Romandia” → limba FR. Prezentatorii setați pe „Doar ale grupurilor alese” văd numai prezentările grupurilor lor. Editorii și administratorii văd tot.',
+  'gr.hint': 'Un grup dă acces la anumite cataloage și limbi, de exemplu „Romandia” → limba FR. Opțional: în loc să bifezi prezentările una câte una, poți da unui prezentator un grup întreg (din „modifică” la utilizator). Editorii și administratorii văd tot.',
   'gr.col.group': 'Grup', 'gr.col.catalogs': 'Cataloage', 'gr.col.langs': 'Limbi', 'gr.col.decks': 'Prezentări', 'gr.col.members': 'Membri',
   'gr.none': 'Niciun grup încă. Fără grupuri, toți prezentatorii văd toate prezentările.',
   'gr.newName': 'Nume grup nou', 'gr.newNamePh': 'de ex. Romandia',
   'gr.catalogs': 'Cataloage (nimic bifat = toate)', 'gr.langs': 'Limbi (nimic bifat = toate)', 'gr.create': 'Creează grupul',
   'gr.uploadFirst': 'încarcă întâi o prezentare', 'gr.createFirst': 'Creează întâi un grup (mai jos).', 'gr.noGroups': 'Nu există încă grupuri.',
   'gr.created': 'Grup creat', 'gr.saved': 'Grup salvat', 'gr.deleted': 'Grup șters',
-  'ac.title': 'Acces la prezentări', 'ac.all': 'Toate prezentările', 'ac.groups': 'Doar prezentările grupurilor alese:', 'ac.saved': 'Acces salvat',
+  'ac.title': 'Acces la prezentări', 'ac.all': 'Toate prezentările', 'ac.groups': 'Doar prezentările alese:', 'ac.saved': 'Acces salvat',
 
   // log
   'lg.all': 'Toate evenimentele', 'lg.auth': 'Autentificări', 'lg.failed': 'Doar autentificări eșuate', 'lg.users': 'Utilizatori',
@@ -162,7 +162,7 @@ const RO = {
   'acc.mismatch': 'Parolele noi nu coincid.', 'acc.changed': 'Parola a fost schimbată',
 
   // presenter
-  'pv.loading': 'Se încarcă prezentarea…', 'pv.preparing': 'Se pregătește…', 'pv.loadFailed': 'Prezentarea nu a putut fi încărcată.',
+  'pv.loading': 'Se încarcă prezentarea…', 'pv.preparing': 'Se pregătește…', 'pv.loadFailed': 'Prezentarea nu a putut fi încărcată.', 'pv.forbidden': 'Această prezentare nu este atribuită contului tău. Cere administratorului acces.',
   'pv.start': 'Pornește pe tot ecranul', 'pv.startPlain': 'Pornește', 'pv.window': 'Fără full screen',
   'pv.hint': 'Ține apăsat o secundă oriunde (sau atinge cu două degete) pentru meniu.',
   'pv.hintHome': 'Pentru ecran complet: apasă <b>Share → Add to Home Screen</b> și deschide prezentarea de pe ecranul principal.<br><br>Ține apăsat o secundă (sau atinge cu două degete) pentru meniu.',
@@ -189,6 +189,10 @@ const RO = {
   'map.localNote': '{n} evenimente din rețeaua locală nu apar pe hartă.',
   'places.title': 'Țări și orașe', 'places.col.place': 'Loc', 'places.col.views': 'Deschideri', 'places.col.logins': 'Logări', 'places.col.failed': 'Eșuate',
   'deck.kErr1': '1 eroare', 'deck.kErr': '{n} erori', 'deck.kWarn': '{n} avertismente', 'deck.kNoBtn': 'Fără butoane', 'deck.inLangs': '{n} limbi', 'home.noActivity': 'Nicio activitate încă.',
+  'ac.decks': 'Prezentări', 'ac.viaGroups': 'Plus, prin grupuri (toate prezentările unui catalog / unei limbi):', 'ac.noDecks': 'Încă nu există prezentări.',
+  'deck.who': 'Cine vede prezentarea', 'deck.whoHint': 'Administratorii și editorii văd toate prezentările. Bifează prezentatorii care trebuie să o vadă.',
+  'deck.seesAll': 'vede toate prezentările', 'deck.noViewers': 'Nu există încă prezentatori. Adaugă-i din Utilizatori, cu rolul Prezentator.', 'deck.whoSaved': 'Acces actualizat',
+  'deck.viaGroup': 'prin grup',
   'home.recent': 'Activitate recentă', 'home.allLog': 'Tot jurnalul →', 'home.decks': 'Prezentări după deschideri',
 };
 
@@ -257,14 +261,14 @@ const EN = {
   'us.add': 'Add user', 'us.username': 'Username (for signing in)', 'us.usernamePh': 'e.g. Alex1 or Ana.Pop',
   'us.name': 'Display name', 'us.namePh': 'Ana Pop', 'us.email': 'Email (optional)', 'us.role': 'Role',
   'us.password': 'Initial password', 'us.generate': 'Generate', 'us.access': 'Access to presentations (for presenters)',
-  'us.accessAll': 'All presentations', 'us.accessGroups': 'Only those of the chosen groups',
+  'us.accessAll': 'All presentations', 'us.accessGroups': 'Only the chosen presentations',
   'us.must': 'Must change the password at first sign-in', 'us.create': 'Create user',
   'us.list': 'Users', 'us.sessions': 'Active sessions',
   'us.sessionsHint': 'Devices signed in right now. “Close” signs the device out immediately.',
   'us.col.user': 'Username', 'us.col.name': 'Name', 'us.col.role': 'Role', 'us.col.access': 'Access', 'us.col.status': 'Status',
   'us.col.lastLogin': 'Last sign-in', 'us.col.sessions': 'Sessions',
   'us.col.device': 'Device', 'us.col.ip': 'IP', 'us.col.lastSeen': 'Last activity', 'us.col.expires': 'Expires',
-  'us.you': '(you)', 'us.allByRole': 'all (role)', 'us.allDecks': 'all', 'us.noGroup': 'no group', 'us.edit': 'change',
+  'us.you': '(you)', 'us.allByRole': 'all (role)', 'us.allDecks': 'all', 'us.noGroup': 'no presentation', 'us.edit': 'change',
   'us.disabled': 'disabled', 'us.mustChange': 'must change password', 'us.active': 'active',
   'us.reset': 'Reset password', 'us.confirmReset': 'Confirm reset?', 'us.disable': 'Disable', 'us.enable': 'Enable',
   'us.closeSession': 'Close', 'us.noSessions': 'No active sessions.',
@@ -283,14 +287,14 @@ const EN = {
   'us.err.pwRules': 'The initial password does not meet the rules under the field. Click “Generate” for a strong one.',
 
   'gr.title': 'Access groups',
-  'gr.hint': 'A group gives access to some catalogues and languages, e.g. “Romandia” → French. Presenters set to “Only those of the chosen groups” see only their groups’ presentations. Editors and administrators see everything.',
+  'gr.hint': 'A group gives access to some catalogues and languages, e.g. “Romandia” → French. Optional: instead of ticking presentations one by one, you can give a presenter a whole group (“change” next to the user). Editors and administrators see everything.',
   'gr.col.group': 'Group', 'gr.col.catalogs': 'Catalogues', 'gr.col.langs': 'Languages', 'gr.col.decks': 'Presentations', 'gr.col.members': 'Members',
   'gr.none': 'No groups yet. Without groups, every presenter sees every presentation.',
   'gr.newName': 'New group name', 'gr.newNamePh': 'e.g. Romandia',
   'gr.catalogs': 'Catalogues (none ticked = all)', 'gr.langs': 'Languages (none ticked = all)', 'gr.create': 'Create group',
   'gr.uploadFirst': 'upload a presentation first', 'gr.createFirst': 'Create a group first (below).', 'gr.noGroups': 'There are no groups yet.',
   'gr.created': 'Group created', 'gr.saved': 'Group saved', 'gr.deleted': 'Group deleted',
-  'ac.title': 'Access to presentations', 'ac.all': 'All presentations', 'ac.groups': 'Only the presentations of these groups:', 'ac.saved': 'Access saved',
+  'ac.title': 'Access to presentations', 'ac.all': 'All presentations', 'ac.groups': 'Only the chosen presentations:', 'ac.saved': 'Access saved',
 
   'lg.all': 'All events', 'lg.auth': 'Sign-ins', 'lg.failed': 'Failed sign-ins only', 'lg.users': 'Users',
   'lg.decks': 'Presentations (all)', 'lg.views': 'Presentations opened', 'lg.settings': 'Settings', 'lg.backup': 'Backup',
@@ -340,7 +344,7 @@ const EN = {
   'pw.generated': 'A strong password was generated and filled into both fields. Write it down before you click “Change password”.',
   'acc.mismatch': 'The new passwords do not match.', 'acc.changed': 'Password changed',
 
-  'pv.loading': 'Loading the presentation…', 'pv.preparing': 'Getting ready…', 'pv.loadFailed': 'The presentation could not be loaded.',
+  'pv.loading': 'Loading the presentation…', 'pv.preparing': 'Getting ready…', 'pv.loadFailed': 'The presentation could not be loaded.', 'pv.forbidden': 'This presentation is not assigned to your account. Ask the administrator for access.',
   'pv.start': 'Start full screen', 'pv.startPlain': 'Start', 'pv.window': 'Without full screen',
   'pv.hint': 'Press and hold anywhere for a second (or tap with two fingers) for the menu.',
   'pv.hintHome': 'For full screen: tap <b>Share → Add to Home Screen</b> and open the presentation from the home screen.<br><br>Press and hold for a second (or tap with two fingers) for the menu.',
@@ -366,6 +370,10 @@ const EN = {
   'map.localNote': '{n} events from the local network are not on the map.',
   'places.title': 'Countries and cities', 'places.col.place': 'Place', 'places.col.views': 'Views', 'places.col.logins': 'Sign-ins', 'places.col.failed': 'Failed',
   'deck.kErr1': '1 error', 'deck.kErr': '{n} errors', 'deck.kWarn': '{n} warnings', 'deck.kNoBtn': 'No buttons', 'deck.inLangs': '{n} languages', 'home.noActivity': 'No activity yet.',
+  'ac.decks': 'Presentations', 'ac.viaGroups': 'Plus, through groups (every presentation of a catalogue / language):', 'ac.noDecks': 'There are no presentations yet.',
+  'deck.who': 'Who sees this presentation', 'deck.whoHint': 'Administrators and editors see every presentation. Tick the presenters who should see it.',
+  'deck.seesAll': 'sees all presentations', 'deck.noViewers': 'No presenters yet. Add them under Users, with the Presenter role.', 'deck.whoSaved': 'Access updated',
+  'deck.viaGroup': 'via group',
   'home.recent': 'Recent activity', 'home.allLog': 'Full log →', 'home.decks': 'Presentations by views',
 };
 

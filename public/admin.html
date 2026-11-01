@@ -260,8 +260,8 @@
         <ul class="pwrules" id="nu-rules"></ul>
       </div>
       <div class="field"><span class="small muted" data-i18n="us.access"></span>
-        <select id="nu-access"><option value="all" data-i18n="us.accessAll"></option><option value="groups" data-i18n="us.accessGroups"></option></select>
-        <div class="groupchecks" id="nu-groups" hidden></div>
+        <select id="nu-access"><option value="groups" data-i18n="us.accessGroups"></option><option value="all" data-i18n="us.accessAll"></option></select>
+        <div id="nu-groups"></div>
       </div>
       <label class="check"><input type="checkbox" id="nu-must" checked> <span data-i18n="us.must"></span></label>
       <div class="err" id="nu-err"></div>
@@ -275,7 +275,7 @@
     <p class="muted" id="ac-user" style="margin:0 0 16px"></p>
     <label class="check"><input type="radio" name="ac" value="all"> <span data-i18n="ac.all"></span></label>
     <label class="check" style="margin-top:10px"><input type="radio" name="ac" value="groups"> <span data-i18n="ac.groups"></span></label>
-    <div class="groupchecks" id="ac-groups" style="margin:12px 0 0 28px"></div>
+    <div id="ac-groups" style="margin:12px 0 0 28px"></div>
   </div>
   <div class="dlg-foot"><button type="button" data-close data-i18n="common.cancel"></button><button type="button" class="primary" id="ac-save" data-i18n="common.save"></button></div>
 </dialog>

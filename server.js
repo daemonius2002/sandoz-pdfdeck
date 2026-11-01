@@ -74,6 +74,7 @@ const groupMatches = (g, deck) => (!g.catalogs?.length || g.catalogs.includes(de
 function visibleTo(user, deck) {
   if (!user) return false;
   if (roleAtLeast(user.role, 'editor') || user.allDecks !== false) return true;
+  if (user.decks?.includes(deck.id)) return true; // presentation assigned to this user directly
   return groups().some((g) => user.groups?.includes(g.id) && groupMatches(g, deck));
 }
 
@@ -251,10 +252,11 @@ app.post('/api/me/password', express.json(), async (req, res) => {
 
 // ================= users (admin) =================
 app.get('/api/users', need('admin'), (_req, res) => res.json(auth.list()));
+const validDecks = (list) => (Array.isArray(list) ? list.filter((id) => db.decks.some((d) => d.id === id)) : undefined);
 const validGroups = (list) => (Array.isArray(list) ? list.filter((id) => groups().some((g) => g.id === id)) : undefined);
 app.post('/api/users', need('admin'), express.json(), async (req, res) => {
   try {
-    if (req.body) req.body.groups = validGroups(req.body.groups) || [];
+    if (req.body) { req.body.groups = validGroups(req.body.groups) || []; req.body.decks = validDecks(req.body.decks) || []; }
     const u = await auth.create(req.body || {});
     audit.log('user.create', { ...meta(req), target: u.username, detail: `rol: ${u.role}` });
     notifier.event('users', `Utilizator nou: ${u.username}`, [`${req.user.username} a creat contul „${u.username}” (${u.name}), rol: ${u.role}.`]);
@@ -264,6 +266,7 @@ app.post('/api/users', need('admin'), express.json(), async (req, res) => {
 app.patch('/api/users/:id', need('admin'), express.json(), async (req, res) => {
   try {
     if (req.body?.groups) req.body.groups = validGroups(req.body.groups);
+    if (req.body?.decks) req.body.decks = validDecks(req.body.decks);
     const { user, changes } = await auth.update(req.params.id, req.body || {}, req.user.id);
     if (changes.length) audit.log('user.update', { ...meta(req), target: user.username, detail: changes.join(', ') });
     if (changes.some((c) => c === 'dezactivat' || c.startsWith('rol'))) notifier.event('users', `Cont modificat: ${user.username}`, [`${req.user.username} a modificat contul „${user.username}”: ${changes.join(', ')}.`]);
@@ -482,16 +485,8 @@ app.post('/api/decks', need('editor'), upload.single('pdf'), async (req, res) =>
   const title = (req.body.title || base.replace(/_+/g, ' ')).trim();
   const catalog = (req.body.catalog || '').trim() || db.decks[0]?.catalog || cleanCatalogName(base);
   const lang = LANGS.includes(req.body.lang) ? req.body.lang : guessLang(base);
-  // same catalog + language again => new version of that presentation (same link)
-  const existing = db.decks.find((d) => d.catalog === catalog && d.lang === lang);
-  if (existing) {
-    try {
-      await ingest(req.file, existing); await save();
-      audit.log('deck.replace', { ...meta(req), target: existing.slug, detail: `${req.file.originalname} · v${existing.version}` });
-      notifyUpload(req, existing, true);
-      return res.json(publicDeck(existing, req));
-    } catch (e) { await fs.unlink(req.file.path).catch(() => {}); return res.status(400).json({ error: 'Nu am putut citi PDF-ul: ' + e.message }); }
-  }
+  // Every upload is a new presentation. A new version of an existing one goes through
+  // "Replace PDF" (PUT /api/decks/:id/file), so nothing is ever overwritten by accident.
   const deck = {
     id: crypto.randomBytes(6).toString('hex'), title, catalog, lang, reference: false,
     slug: uniqueSlug(slugify(`${catalog}-${lang}`)),
@@ -562,6 +557,7 @@ app.delete('/api/decks/:id', need('editor'), async (req, res) => {
   if (!deck) return res.status(404).json({ error: 'Nu există' });
   db.decks.splice(db.decks.indexOf(deck), 1);
   await save();
+  await auth.removeDeckEverywhere(deck.id);
   await Promise.all([
     fs.unlink(path.join(DIRS.files, deck.file)), fs.unlink(path.join(DIRS.analysis, `${deck.id}.json`)),
     fs.unlink(path.join(DIRS.thumbs, `${deck.id}.png`)),
@@ -594,7 +590,16 @@ const loginRedirect = (req, res) => res.redirect(`/login?next=${encodeURICompone
 app.get('/p/:slug', (req, res) => {
   const deck = findSlug(req.params.slug);
   if (!deck) return res.status(404).send(langOf(req) === 'en' ? toEnglish('Prezentarea nu există.') : 'Prezentarea nu există.');
-  if (!canView(req, deck)) return loginRedirect(req, res);
+  if (!canView(req, deck)) {
+    if (!req.user || req.user.mustChangePassword) return loginRedirect(req, res);
+    // signed in, but not assigned to this presentation: explain (redirecting to the sign-in page would loop)
+    const en = langOf(req) === 'en';
+    return res.status(403).type('html').send(`<!doctype html><html lang="${en ? 'en' : 'ro'}"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>${en ? 'No access' : 'Fără acces'}</title><link rel="icon" href="/favicon.png"><link rel="stylesheet" href="/admin.css"></head>
+<body class="login-page"><main class="login-card"><img class="logo" src="/icon.png" alt=""><h1 style="font-size:30px">${en ? 'No access' : 'Fără acces'}</h1>
+<p>${en ? 'This presentation is not assigned to your account. Ask the administrator for access.' : 'Această prezentare nu este atribuită contului tău. Cere administratorului acces.'}</p>
+<p style="margin-top:22px"><a class="btn primary wide" href="/admin#decks">${en ? 'My presentations' : 'Prezentările mele'}</a></p></main></body></html>`);
+  }
   res.set('Cache-Control', 'no-cache');
   res.type('html').send(viewerHtml
     .replaceAll('{{TITLE}}', esc(deck.title))
@@ -607,7 +612,11 @@ let statsTimer = null;
 app.get('/p/:slug/deck.json', async (req, res) => {
   const deck = findSlug(req.params.slug);
   if (!deck) return res.status(404).json({ error: 'not found' });
-  if (!canView(req, deck)) return res.status(401).json({ error: 'auth', login: `/login?next=${encodeURIComponent('/p/' + deck.slug)}` });
+  if (!canView(req, deck)) {
+    // signed in, but this presentation is not assigned to the account: say so instead of asking to sign in again
+    if (req.user && !req.user.mustChangePassword) return res.status(403).json({ error: 'forbidden' });
+    return res.status(401).json({ error: 'auth', login: `/login?next=${encodeURIComponent('/p/' + deck.slug)}` });
+  }
   const analysis = JSON.parse(await fs.readFile(path.join(DIRS.analysis, `${deck.id}.json`), 'utf8'));
   if (settings().logViews) {
     audit.log('deck.view', { ...meta(req), target: deck.slug });

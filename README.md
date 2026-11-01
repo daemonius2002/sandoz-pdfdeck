@@ -61,6 +61,18 @@ Din `/admin`:
 
 Parolele sunt stocate doar ca hash (scrypt). Parola serverului de email stă doar în variabilele de mediu, nu în date sau în backup. Datele stau în `DATA_DIR`: `users.json`, `sessions.json`, `settings.json`, `decks.json`, `logs/`.
 
+## Cine vede ce prezentare
+
+- **Administratorii și editorii** văd toate prezentările.
+- **Prezentatorii** văd fie *toate prezentările*, fie *doar prezentările alese* pentru contul lor.
+- Atribuirea se face în două locuri, cu același efect:
+  - **Utilizatori → modifică** (la coloana Acces): bifezi prezentările pentru acel cont;
+  - **Prezentări → ⚙ Setări → Cine vede prezentarea**: bifezi prezentatorii care o văd.
+- Opțional, **grupurile** dau acces la un catalog / o limbă întreagă (de ex. tot ce e în FR).
+- Un prezentator care deschide linkul unei prezentări neatribuite vede mesajul „Fără acces”.
+- Fiecare PDF încărcat devine o prezentare nouă; o versiune nouă a aceleiași prezentări se urcă din
+  **⚙ Setări → Înlocuiește PDF-ul** (linkul rămâne același).
+
 ## Locația logărilor și harta
 
 Fiecare logare, logare eșuată și deschidere de prezentare primește locația aproximativă (țară, oraș),

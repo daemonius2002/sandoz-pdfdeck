@@ -26,6 +26,7 @@ async function load() {
   const r = await fetch(`/p/${encodeURIComponent(slug)}/deck.json`, { cache: 'no-cache' }).catch(() => null)
     || await caches?.match?.(`/p/${encodeURIComponent(slug)}/deck.json`);
   if (r && r.status === 401) { location.href = '/login?next=' + encodeURIComponent(location.pathname); return; }
+  if (r && r.status === 403) throw new Error(t('pv.forbidden'));
   if (!r || !r.ok) throw new Error(t('pv.loadFailed'));
   deck = await r.json();
   document.documentElement.style.setProperty('--bg', deck.settings.background);
